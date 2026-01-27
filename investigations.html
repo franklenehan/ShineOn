@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShineOn - Investigations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Component -->
+    <div id="header-placeholder"></div>
+
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1>Research & Investigations</h1>
+                <p class="lead mb-0">Document your research on treatments, transplants, and holistic options</p>
+            </div>
+            <div class="btn-group" role="group">
+                <button class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#searchFilterModal">
+                    <i class="bi bi-search me-2"></i>Search & Filter
+                </button>
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addResearchModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add Research
+                </button>
+            </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        <div id="active-filters-display" class="mb-3" style="display: none;">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <span class="text-muted small">Active filters:</span>
+                <span id="search-filter-badge" class="badge bg-info" style="display: none;">
+                    <i class="bi bi-search me-1"></i><span id="search-filter-text"></span>
+                    <i class="bi bi-x-circle ms-1" style="cursor: pointer;" onclick="clearSearchFilter()"></i>
+                </span>
+                <span id="category-filter-badge" class="badge bg-primary" style="display: none;">
+                    <i class="bi bi-tag me-1"></i><span id="category-filter-text"></span>
+                    <i class="bi bi-x-circle ms-1" style="cursor: pointer;" onclick="clearCategoryFilter()"></i>
+                </span>
+                <span id="priority-filter-badge" class="badge bg-warning" style="display: none;">
+                    <i class="bi bi-flag me-1"></i><span id="priority-filter-text"></span>
+                    <i class="bi bi-x-circle ms-1" style="cursor: pointer;" onclick="clearPriorityFilter()"></i>
+                </span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearAllFilters()">
+                    <i class="bi bi-x-circle me-1"></i>Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h3 class="text-primary mb-0" id="total-research-count">0</h3>
+                        <small class="text-muted">Total Research</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h3 class="text-danger mb-0" id="high-priority-count">0</h3>
+                        <small class="text-muted">High Priority</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h3 class="text-success mb-0" id="reviewed-count">0</h3>
+                        <small class="text-muted">Reviewed</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h3 class="text-info mb-0" id="categories-count">0</h3>
+                        <small class="text-muted">Categories</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Research Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-medical me-2"></i>Research Entries
+                        </h5>
+                        <button class="btn btn-light btn-sm" id="export-research-btn">
+                            <i class="bi bi-download me-1"></i>Export CSV
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="research-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 5%;">
+                                            <input type="checkbox" id="select-all-checkbox" class="form-check-input">
+                                        </th>
+                                        <th style="width: 25%;">Title</th>
+                                        <th style="width: 15%;">Category</th>
+                                        <th style="width: 10%;">Priority</th>
+                                        <th style="width: 10%;">Status</th>
+                                        <th style="width: 15%;">Date Added</th>
+                                        <th style="width: 10%;">Rating</th>
+                                        <th style="width: 10%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="research-table-body">
+                                    <!-- Will be populated by JavaScript -->
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                            <p class="mt-3">No research entries yet. Click "Add Research" to get started.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Showing <span id="showing-count">0</span> of <span id="total-count">0</span> entries
+                            </small>
+                            <div>
+                                <button class="btn btn-sm btn-outline-danger" id="delete-selected-btn" disabled>
+                                    <i class="bi bi-trash me-1"></i>Delete Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Research Modal -->
+    <div class="modal fade" id="addResearchModal" tabindex="-1" aria-labelledby="addResearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="addResearchModalLabel">
+                        <i class="bi bi-plus-circle me-2"></i>Add Research Entry
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="research-form">
+                        <input type="hidden" id="research-id">
+                        
+                        <div class="row g-3">
+                            <!-- Title -->
+                            <div class="col-12">
+                                <label for="research-title" class="form-label">
+                                    Title <span class="text-danger">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="research-title" 
+                                    placeholder="e.g., Mayo Clinic Transplant Program"
+                                    required
+                                >
+                            </div>
+
+                            <!-- Category and Priority -->
+                            <div class="col-md-6">
+                                <label for="research-category" class="form-label">
+                                    Category <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="research-category" required>
+                                    <option value="">Select category...</option>
+                                    <option value="Transplant">Transplant Options</option>
+                                    <option value="Treatment Center">Treatment Centers</option>
+                                    <option value="Holistic">Holistic Options</option>
+                                    <option value="Clinical Trial">Clinical Trials</option>
+                                    <option value="Medication">Medications</option>
+                                    <option value="Diet">Diet & Nutrition</option>
+                                    <option value="Alternative">Alternative Therapies</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="research-priority" class="form-label">
+                                    Priority <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="research-priority" required>
+                                    <option value="">Select priority...</option>
+                                    <option value="High">High</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                            </div>
+
+                            <!-- Status and Rating -->
+                            <div class="col-md-6">
+                                <label for="research-status" class="form-label">Status</label>
+                                <select class="form-select" id="research-status">
+                                    <option value="To Review">To Review</option>
+                                    <option value="Reviewing">Reviewing</option>
+                                    <option value="Reviewed">Reviewed</option>
+                                    <option value="Pursuing">Pursuing</option>
+                                    <option value="On Hold">On Hold</option>
+                                    <option value="Not Suitable">Not Suitable</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="research-rating" class="form-label">Rating</label>
+                                <select class="form-select" id="research-rating">
+                                    <option value="">Not rated</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                    <option value="4">⭐⭐⭐⭐ Good</option>
+                                    <option value="3">⭐⭐⭐ Average</option>
+                                    <option value="2">⭐⭐ Below Average</option>
+                                    <option value="1">⭐ Poor</option>
+                                </select>
+                            </div>
+
+                            <!-- Source/Link -->
+                            <div class="col-12">
+                                <label for="research-source" class="form-label">Source/Link</label>
+                                <input 
+                                    type="url" 
+                                    class="form-control" 
+                                    id="research-source" 
+                                    placeholder="https://example.com"
+                                >
+                                <small class="text-muted">Optional: Website or document link</small>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div class="col-md-6">
+                                <label for="research-contact" class="form-label">Contact Person</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="research-contact" 
+                                    placeholder="e.g., Dr. Smith"
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="research-phone" class="form-label">Phone Number</label>
+                                <input 
+                                    type="tel" 
+                                    class="form-control" 
+                                    id="research-phone" 
+                                    placeholder="e.g., (555) 123-4567"
+                                >
+                            </div>
+
+                            <!-- Location -->
+                            <div class="col-12">
+                                <label for="research-location" class="form-label">Location</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="research-location" 
+                                    placeholder="e.g., Rochester, MN"
+                                >
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="col-12">
+                                <label for="research-notes" class="form-label">Notes</label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="research-notes" 
+                                    rows="4"
+                                    placeholder="Add detailed notes, pros/cons, costs, requirements, etc."
+                                ></textarea>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="col-12">
+                                <label for="research-tags" class="form-label">Tags</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="research-tags" 
+                                    placeholder="e.g., stem-cell, insurance-covered, clinical-trial"
+                                >
+                                <small class="text-muted">Separate tags with commas</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="save-research-btn">
+                        <i class="bi bi-save me-1"></i>Save Research
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div class="modal fade" id="viewDetailsModal" tabindex="-1" aria-labelledby="viewDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="viewDetailsModalLabel">
+                        <i class="bi bi-eye me-2"></i>Research Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="view-details-content">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="edit-from-view-btn">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Modal -->
+    <div class="modal fade" id="searchFilterModal" tabindex="-1" aria-labelledby="searchFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="searchFilterModalLabel">
+                        <i class="bi bi-search me-2"></i>Search & Filter Research
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Search Input -->
+                        <div class="col-12">
+                            <label for="search-input" class="form-label">
+                                <i class="bi bi-search me-1"></i>Search
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg" 
+                                id="search-input" 
+                                placeholder="Search by title, category, notes, location, or tags..."
+                            >
+                            <small class="text-muted">Search across all research fields</small>
+                        </div>
+
+                        <div class="col-12">
+                            <hr>
+                            <h6 class="text-muted">Filter Options</h6>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="col-md-6">
+                            <label for="category-filter" class="form-label">
+                                <i class="bi bi-tag me-1"></i>Category
+                            </label>
+                            <select class="form-select" id="category-filter">
+                                <option value="">All Categories</option>
+                                <option value="Transplant">Transplant Options</option>
+                                <option value="Treatment Center">Treatment Centers</option>
+                                <option value="Holistic">Holistic Options</option>
+                                <option value="Clinical Trial">Clinical Trials</option>
+                                <option value="Medication">Medications</option>
+                                <option value="Diet">Diet & Nutrition</option>
+                                <option value="Alternative">Alternative Therapies</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Priority Filter -->
+                        <div class="col-md-6">
+                            <label for="priority-filter" class="form-label">
+                                <i class="bi bi-flag me-1"></i>Priority
+                            </label>
+                            <select class="form-select" id="priority-filter">
+                                <option value="">All Priorities</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="col-md-6">
+                            <label for="status-filter" class="form-label">
+                                <i class="bi bi-check-circle me-1"></i>Status
+                            </label>
+                            <select class="form-select" id="status-filter">
+                                <option value="">All Statuses</option>
+                                <option value="To Review">To Review</option>
+                                <option value="Reviewing">Reviewing</option>
+                                <option value="Reviewed">Reviewed</option>
+                                <option value="Pursuing">Pursuing</option>
+                                <option value="On Hold">On Hold</option>
+                                <option value="Not Suitable">Not Suitable</option>
+                            </select>
+                        </div>
+
+                        <!-- Rating Filter -->
+                        <div class="col-md-6">
+                            <label for="rating-filter" class="form-label">
+                                <i class="bi bi-star me-1"></i>Minimum Rating
+                            </label>
+                            <select class="form-select" id="rating-filter">
+                                <option value="">Any Rating</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                                <option value="4">⭐⭐⭐⭐ (4+ stars)</option>
+                                <option value="3">⭐⭐⭐ (3+ stars)</option>
+                                <option value="2">⭐⭐ (2+ stars)</option>
+                                <option value="1">⭐ (1+ stars)</option>
+                            </select>
+                        </div>
+
+                        <!-- Results Preview -->
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong id="filter-results-count">0</strong> entries match your filters
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="clear-filters-btn">
+                        <i class="bi bi-x-circle me-1"></i>Clear All Filters
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                        <i class="bi bi-check-circle me-1"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Component -->
+    <div id="footer-placeholder"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firestore-sync.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/investigations.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

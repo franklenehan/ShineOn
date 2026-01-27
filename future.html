@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShineOn - Future Plans</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Component -->
+    <div id="header-placeholder"></div>
+
+    <div class="container mt-4">
+        <!-- Motivational Banner -->
+        <div class="motivational-banner card border-0 shadow-lg mb-4">
+            <div class="card-body p-5 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-sunrise display-1 text-warning"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Your Future Awaits</h1>
+                <p class="lead mb-4">
+                    Every challenge you face today is building the strength for tomorrow's victories. 
+                    Your journey doesn't end here—it transforms into something beautiful.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <div class="stat-badge">
+                        <i class="bi bi-heart-pulse text-danger"></i>
+                        <strong>Stay Strong</strong>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="bi bi-brightness-high text-warning"></i>
+                        <strong>Stay Hopeful</strong>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="bi bi-stars text-primary"></i>
+                        <strong>Dream Big</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Notes & Goals -->
+            <div class="col-lg-6 mb-4">
+                <!-- Vision Notes -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text me-2"></i>My Vision & Dreams
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            Write about your hopes, dreams, and what you're looking forward to...
+                        </p>
+                        <textarea 
+                            class="form-control mb-3" 
+                            id="vision-notes" 
+                            rows="6"
+                            placeholder="What does your ideal future look like? What experiences do you want to have? Who do you want to spend time with?"
+                        ></textarea>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted" id="vision-save-status">Auto-saves as you type</small>
+                            <button class="btn btn-sm btn-primary" id="save-vision-btn">
+                                <i class="bi bi-save me-1"></i>Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Life Goals -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-trophy me-2"></i>Life Goals
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Add a New Goal</label>
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="new-goal-input" 
+                                    placeholder="e.g., Learn to paint, Run a 5K, Visit Paris"
+                                >
+                                <button class="btn btn-success" type="button" id="add-goal-btn">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="goals-list" class="goals-list">
+                            <!-- Will be populated by JavaScript -->
+                            <p class="text-muted text-center py-3">No goals yet. Add your first goal above!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Post-Recovery Plans -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>Post-Recovery Plans
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-lightbulb me-1"></i>
+                            Plan the exciting things you'll do when you're feeling better. Each completed item will be timestamped!
+                        </p>
+
+                        <!-- Add Plan Form -->
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Plan Title</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="plan-title-input" 
+                                        placeholder="e.g., Weekend trip to the beach"
+                                    >
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Category</label>
+                                    <select class="form-select" id="plan-category-input">
+                                        <option value="Travel">🌍 Travel</option>
+                                        <option value="Hobby">🎨 Hobby</option>
+                                        <option value="Milestone">🎯 Milestone</option>
+                                        <option value="Social">👥 Social</option>
+                                        <option value="Health">💪 Health</option>
+                                        <option value="Learning">📚 Learning</option>
+                                        <option value="Other">✨ Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Priority</label>
+                                    <select class="form-select" id="plan-priority-input">
+                                        <option value="High">High</option>
+                                        <option value="Medium" selected>Medium</option>
+                                        <option value="Low">Low</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Notes (Optional)</label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="plan-notes-input" 
+                                        rows="2"
+                                        placeholder="Add details about this plan..."
+                                    ></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-warning w-100" id="add-plan-btn">
+                                        <i class="bi bi-plus-circle me-1"></i>Add Plan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Plans List -->
+                        <div id="recovery-plans-list" class="recovery-plans-list">
+                            <!-- Will be populated by JavaScript -->
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-clipboard-heart" style="font-size: 2.5rem;"></i>
+                                <p class="mt-2">No plans yet. Add your first post-recovery plan above!</p>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <h4 class="text-primary mb-0" id="total-plans-count">0</h4>
+                                    <small class="text-muted">Total Plans</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-success mb-0" id="completed-plans-count">0</h4>
+                                    <small class="text-muted">Completed</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-warning mb-0" id="pending-plans-count">0</h4>
+                                    <small class="text-muted">Pending</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Component -->
+    <div id="footer-placeholder"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firestore-sync.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

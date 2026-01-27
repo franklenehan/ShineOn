@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShineOn - Nutrition</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Header Component -->
+  <div id="header-placeholder"></div>
+
+  <div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h1>Nutrition</h1>
+        <p class="lead text-muted mb-0">Eat to stay strong: low sugar, smart carbs, quality protein, and nourishing recipes.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addTipModal">
+          <i class="bi bi-emoji-smile me-1"></i>Add Tip
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecipeModal">
+          <i class="bi bi-plus-circle me-1"></i>Add Recipe
+        </button>
+      </div>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-journal-richtext me-2"></i>Nutrition Tips</h5>
+      </div>
+      <div class="card-body">
+        <div id="tips-empty" class="text-center text-muted py-4" style="display:none;">
+          <i class="bi bi-lightbulb" style="font-size:2rem;"></i>
+          <p class="mt-2 mb-0">No tips yet. Click "Add Tip" to get started.</p>
+        </div>
+        <div id="tips-list" class="row g-3"></div>
+      </div>
+    </div>
+
+    <!-- Recipes Section -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-egg-fried me-2"></i>Recipes</h5>
+      </div>
+      <div class="card-body">
+        <ul class="nav nav-pills mb-3" id="recipeTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-breakfast" data-bs-toggle="pill" data-bs-target="#pane-breakfast" type="button" role="tab">Breakfast</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-lunch" data-bs-toggle="pill" data-bs-target="#pane-lunch" type="button" role="tab">Lunch</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-dinner" data-bs-toggle="pill" data-bs-target="#pane-dinner" type="button" role="tab">Dinner</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-snacks" data-bs-toggle="pill" data-bs-target="#pane-snacks" type="button" role="tab">Snacks</button>
+          </li>
+        </ul>
+        <div class="tab-content" id="recipePanes">
+          <div class="tab-pane fade show active" id="pane-breakfast" role="tabpanel">
+            <div id="list-breakfast" class="row g-3"></div>
+            <div id="empty-breakfast" class="text-center text-muted py-4" style="display:none;">No breakfast recipes yet.</div>
+          </div>
+          <div class="tab-pane fade" id="pane-lunch" role="tabpanel">
+            <div id="list-lunch" class="row g-3"></div>
+            <div id="empty-lunch" class="text-center text-muted py-4" style="display:none;">No lunch recipes yet.</div>
+          </div>
+          <div class="tab-pane fade" id="pane-dinner" role="tabpanel">
+            <div id="list-dinner" class="row g-3"></div>
+            <div id="empty-dinner" class="text-center text-muted py-4" style="display:none;">No dinner recipes yet.</div>
+          </div>
+          <div class="tab-pane fade" id="pane-snacks" role="tabpanel">
+            <div id="list-snacks" class="row g-3"></div>
+            <div id="empty-snacks" class="text-center text-muted py-4" style="display:none;">No snack recipes yet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Total Recipes: <strong id="recipes-count">0</strong></small>
+        <button class="btn btn-sm btn-outline-secondary" id="export-recipes-btn"><i class="bi bi-download me-1"></i>Export Recipes (CSV)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Tip Modal -->
+  <div class="modal fade" id="addTipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i><span id="tipModalTitle">Add Tip</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="tip-form" novalidate>
+            <input type="hidden" id="tip-id">
+            <div class="mb-3">
+              <label class="form-label">Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="tip-title" required>
+              <div class="invalid-feedback">Please enter a title.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Category</label>
+              <select id="tip-category" class="form-select">
+                <option value="General">General</option>
+                <option value="Low Sugar">Low Sugar</option>
+                <option value="Low Carb">Low Carb</option>
+                <option value="Protein">Protein</option>
+                <option value="Hydration">Hydration</option>
+                <option value="Supplements">Supplements</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Details</label>
+              <textarea class="form-control" id="tip-details" rows="4" placeholder="Add guidance, examples, or notes..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Cancel</button>
+          <button class="btn btn-success" id="save-tip-btn"><i class="bi bi-check-circle me-1"></i>Save Tip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Recipe Modal -->
+  <div class="modal fade" id="addRecipeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i><span id="recipeModalTitle">Add Recipe</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="recipe-form" novalidate>
+            <input type="hidden" id="recipe-id">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Title <span class="text-danger">*</span></label>
+                <input type="text" id="recipe-title" class="form-control" required>
+                <div class="invalid-feedback">Please enter a title.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Category <span class="text-danger">*</span></label>
+                <select id="recipe-category" class="form-select" required>
+                  <option value="">Choose...</option>
+                  <option>Breakfast</option>
+                  <option>Lunch</option>
+                  <option>Dinner</option>
+                  <option>Snacks</option>
+                </select>
+                <div class="invalid-feedback">Please select a category.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Ingredients <span class="text-muted small">(one per line)</span></label>
+                <textarea id="recipe-ingredients" class="form-control" rows="4" placeholder="e.g., 2 eggs\n1 cup spinach\n1 tbsp olive oil"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Instructions</label>
+                <textarea id="recipe-instructions" class="form-control" rows="5" placeholder="Steps to prepare..."></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Cancel</button>
+          <button class="btn btn-primary" id="save-recipe-btn"><i class="bi bi-check-circle me-1"></i>Save Recipe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Component -->
+  <div id="footer-placeholder"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <!-- Firebase SDK (Compat) and App setup -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-init.js"></script>
+  <script src="js/firestore-sync.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/nutrition.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
