@@ -3,6 +3,9 @@
    Calm, Accessible, Cohesive
    ======================================== */
 
+/* Font imports */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap');
+
 /* Color Palette - Deep Blues & Warm Accents */
 :root {
     /* Primary Colors - Deep Navy/Blues */
@@ -21,7 +24,7 @@
     --accent-lavender: #FFE9B3; /* soft light gold */
     
     /* Neutral Colors */
-    --neutral-dark: #111827;
+    --neutral-dark: #4A4A4A;
     --neutral-medium: #4B5563;
     --neutral-light: #9CA3AF;
     --neutral-lighter: #D1D5DB;
@@ -86,7 +89,7 @@ html {
 }
 
 body {
-    font-family: var(--font-primary);
+    font-family: 'Inter', sans-serif;
     font-size: var(--text-base);
     line-height: 1.7;
     color: var(--neutral-dark);
@@ -96,6 +99,7 @@ body {
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-top: 110px; /* extra space below fixed navbar */
 }
 
 /* Main content area */
@@ -107,6 +111,7 @@ body {
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
+    font-family: 'Rubik', sans-serif;
     font-weight: 600;
     line-height: 1.3;
     color: var(--neutral-dark);
@@ -149,15 +154,21 @@ p {
    NAVIGATION
    ======================================== */
 .navbar {
-    background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-blue) 100%) !important;
+    background-color: var(--primary-teal) !important;
+    background-image: none !important;
     box-shadow: var(--shadow-md);
     padding: var(--spacing-md) 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
 }
 
 .navbar-brand {
     font-weight: 700;
     font-size: var(--text-2xl);
-    color: var(--white) !important;
+    color: #FFDB58 !important;
     transition: opacity 0.3s ease;
 }
 
@@ -168,7 +179,7 @@ p {
 .navbar-nav .nav-link {
     padding: var(--spacing-sm) var(--spacing-md);
     transition: all 0.3s ease;
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: #FFDB58 !important;
     font-size: var(--text-base);
     font-weight: 500;
     border-radius: var(--radius-md);
@@ -177,12 +188,12 @@ p {
 
 .navbar-nav .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.15);
-    color: var(--white) !important;
+    color: #FFDB58 !important;
 }
 
 .navbar-nav .nav-link.active {
     background-color: rgba(255, 255, 255, 0.25);
-    color: var(--white) !important;
+    color: #FFDB58 !important;
 }
 
 .navbar-toggler {
@@ -235,30 +246,48 @@ p {
     font-size: var(--text-lg);
     border-bottom: 1px solid var(--neutral-lightest);
     padding: var(--spacing-lg);
-    background-color: var(--bg-card);
+    background-color: var(--primary-teal) !important;
+    color: #FFDB58 !important;
+}
+
+/* Ensure headings inside card headers use gold text, not the global heading color */
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+    color: #FFDB58 !important;
 }
 
 .card-header.bg-primary {
-    background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-blue) 100%) !important;
-    color: var(--white) !important;
+    background-color: var(--primary-teal) !important;
+    color: #FFDB58 !important;
+    border-bottom: none;
+}
+
+/* Teal header specifically for Today's Focus card on index page */
+.card-header.bg-focus-teal {
+    background-color: var(--primary-teal) !important;
+    color: #FFDB58 !important;
     border-bottom: none;
 }
 
 .card-header.bg-success {
-    background-color: var(--success) !important;
-    color: var(--white) !important;
+    background-color: var(--primary-teal) !important;
+    color: #FFDB58 !important;
     border-bottom: none;
 }
 
 .card-header.bg-info {
-    background-color: var(--info) !important;
-    color: var(--white) !important;
+    background-color: var(--primary-teal) !important;
+    color: #FFDB58 !important;
     border-bottom: none;
 }
 
 .card-header.bg-warning {
-    background-color: var(--warning) !important;
-    color: var(--neutral-dark) !important;
+    background-color: var(--primary-teal) !important;
+    color: #FFDB58 !important;
     border-bottom: none;
 }
 
