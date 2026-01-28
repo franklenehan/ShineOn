@@ -157,7 +157,7 @@ p {
     background-color: var(--primary-teal) !important;
     background-image: none !important;
     box-shadow: var(--shadow-md);
-    padding: var(--spacing-md) 0;
+    padding: 0;
     position: fixed;
     top: 0;
     left: 0;
@@ -170,6 +170,14 @@ p {
     font-size: var(--text-2xl);
     color: #FFDB58 !important;
     transition: opacity 0.3s ease;
+}
+
+/* Remove extra vertical padding/margin on the logo image so header height stays compact */
+.navbar-brand img {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .navbar-brand:hover {
@@ -293,6 +301,17 @@ p {
 
 .card-body {
     padding: var(--spacing-lg);
+}
+
+/* Homepage card height alignment */
+.home-today-card,
+.home-inspiration-card {
+    min-height: 360px; /* adjust this value if you want them taller/shorter */
+}
+
+.home-quickstats-card,
+.home-weekly-card {
+    min-height: 420px; /* align Quick Stats with Weekly Adherence card height */
 }
 
 .card-footer {

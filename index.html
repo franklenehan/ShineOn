@@ -31,7 +31,7 @@
         <div class="row">
             <!-- Middle Section: Today Panel -->
             <div class="col-lg-8 mb-4">
-                <div class="card shadow-sm">
+                <div class="card shadow-sm home-today-card">
                     <div class="card-header bg-focus-teal text-white">
                         <h3 class="mb-0">
                             <i class="bi bi-calendar-check me-2"></i>Today's Focus
@@ -65,10 +65,10 @@
                 </div>
             </div>
 
-            <!-- Right Section: Daily Quote and Quick Stats -->
+            <!-- Right Section: Daily Quote -->
             <div class="col-lg-4 mb-4">
                 <!-- Daily Quote Card -->
-                <div class="card shadow-sm mb-4">
+                <div class="card shadow-sm mb-4 home-inspiration-card">
                     <div class="card-header bg-info text-white">
                         <h5 class="mb-0">
                             <i class="bi bi-quote me-2"></i>Daily Inspiration
@@ -80,9 +80,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <!-- Quick Stats + Weekly Adherence Row -->
+        <div class="row mt-4">
+            <div class="col-lg-4 mb-4">
                 <!-- Quick Stats Card -->
-                <div class="card shadow-sm">
+                <div class="card shadow-sm home-quickstats-card">
                     <div class="card-header bg-success text-white">
                         <h5 class="mb-0">
                             <i class="bi bi-graph-up me-2"></i>Quick Stats
@@ -120,21 +125,19 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Weekly Adherence Chart -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card shadow-sm">
+            <div class="col-lg-8 mb-4">
+                <!-- Weekly Adherence Chart -->
+                <div class="card shadow-sm home-weekly-card">
                     <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--primary-teal, #5FA8A8), var(--primary-blue, #4A90A4));">
                         <h5 class="mb-0">
-                            <i class="bi bi-graph-up me-2"></i>Weekly Adherence
+                            <i class="bi bi-graph-up me-2"></i>Weekly Stats
                         </h5>
                     </div>
                     <div class="card-body">
                         <p class="text-muted small mb-3">
                             <i class="bi bi-info-circle me-1"></i>
-                            Shows the percentage of supplements completed each day over the past 7 days
+                            Shows the percentage of wellness stats completed each day over the past 7 days
                         </p>
                         <div class="chart-container" style="position: relative; height: 300px;">
                             <canvas id="adherence-chart"></canvas>
