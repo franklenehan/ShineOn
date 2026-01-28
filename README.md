@@ -1,4 +1,4 @@
-# Frank's Cancer Journey
+# My Cancer Journey
 
 A personal health tracking web application to manage cancer treatment, track progress, and maintain daily wellness routines.
 
