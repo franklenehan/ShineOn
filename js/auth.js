@@ -185,8 +185,19 @@ async function initCurrentUserState() {
 
             // Switch button from opening the modal to acting as a dropdown toggle
             navLoginButton.removeAttribute('data-bs-target');
-            navLoginButton.setAttribute('data-bs-toggle', 'dropdown');
+            navLoginButton.removeAttribute('data-bs-toggle');
             navLoginButton.classList.add('dropdown-toggle');
+
+            // Manual dropdown toggle to avoid any Bootstrap data-API timing issues
+            const navUserMenu = document.getElementById('navUserMenu');
+            if (navUserMenu) {
+                navLoginButton.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const isShown = navUserMenu.classList.contains('show');
+                    navUserMenu.classList.toggle('show', !isShown);
+                    navLoginButton.setAttribute('aria-expanded', String(!isShown));
+                });
+            }
 
             // Wire up logout button
             if (navLogoutButton) {

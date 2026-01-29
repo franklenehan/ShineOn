@@ -52,12 +52,25 @@
                             <div class="d-flex justify-content-between align-items-center mt-2">
                                 <small id="reflection-status" class="text-muted">Auto-saves as you type</small>
                                 <div class="d-flex gap-2">
-                                    <button id="open-progress-modal-btn" class="btn btn-sm btn-info text-white rounded-pill px-3">
+                                    <button id="open-progress-modal-btn" class="btn btn-sm btn-info text-white">
                                         <i class="bi bi-emoji-smile me-1"></i>Wellness
                                     </button>
                                     <button id="save-reflection-btn" class="btn btn-sm btn-success">
                                         <i class="bi bi-save me-1"></i>Save Reflection
                                     </button>
+                                    <button id="past-reflections-btn" class="btn btn-sm btn-secondary">
+                                        <i class="bi bi-calendar-event me-1"></i>Past Reflections
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="past-reflections-panel" class="mt-2 d-none">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-auto">
+                                        <small class="text-muted">View reflection from:</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <input type="date" id="reflection-date-picker" class="form-control form-control-sm">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -84,7 +97,7 @@
         </div>
 
         <!-- Quick Stats + Weekly Adherence Row -->
-        <div class="row mt-4">
+        <div class="row mt-2">
             <div class="col-lg-4 mb-4">
                 <!-- Quick Stats Card -->
                 <div class="card shadow-sm home-quickstats-card">
@@ -158,19 +171,19 @@
         </div>
     </div>
 
-    <!-- Todays Wellbeing Progress Modal -->
+    <!-- Today's Wellbeing Progress Modal -->
     <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header wellbeing-modal-header">
                     <h5 class="modal-title" id="progressModalLabel">
-                        <i class="bi bi-emoji-smile me-2"></i>Todays Wellbeing Check-in
+                        <i class="bi bi-emoji-smile me-2"></i>Today's Wellbeing Check-in
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-muted small mb-3">
-                        Theres no right score here. This is just for you to notice how youre doing over time.
+                        There is no right score here. This is just for you to notice how you're doing over time.
                     </p>
                     <form id="progress-form">
                         <div class="mb-3">

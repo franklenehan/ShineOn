@@ -53,11 +53,164 @@ async function initIndexPage() {
     // Initialize wellbeing progress modal
     initProgressModal();
 
-    // Update quick stats and weekly adherence chart (legacy, still using StorageAPI)
+    // Update quick stats (still using StorageAPI for now)
     await updateQuickStats();
-    await initWeeklyAdherenceChart();
+
+    // Initialize weekly stats chart (7 days of wellbeing ratings)
+    await initWeeklyStatsChart();
     
     console.log('✅ Index page initialized');
+}
+
+// Weekly Stats Chart (last 7 days of wellbeing ratings)
+async function initWeeklyStatsChart() {
+    const canvas = document.getElementById('adherence-chart');
+    if (!canvas || typeof Chart === 'undefined') {
+        console.warn('📉 Weekly stats chart: canvas or Chart.js not available');
+        return;
+    }
+
+    try {
+        const res = await fetch('progress-weekly.php');
+        if (!res.ok) {
+            console.error('❌ Failed to load weekly progress data');
+            return;
+        }
+
+        const data = await res.json();
+        if (!data || !data.success) {
+            console.error('❌ Weekly progress response invalid:', data);
+            return;
+        }
+
+        const labels = data.labels || [];
+        const series = data.series || {};
+
+        // Use short day labels for x-axis (e.g., Mon, Tue) while preserving order
+        const dayLabels = labels.map(d => {
+            const dt = new Date(d + 'T00:00:00');
+            return dt.toLocaleDateString(undefined, { weekday: 'short' });
+        });
+
+        const ctx = canvas.getContext('2d');
+
+        const datasets = [
+            {
+                key: 'overall_wellbeing',
+                label: 'Overall wellbeing',
+                borderColor: '#1f77b4',
+                backgroundColor: 'rgba(31, 119, 180, 0.15)'
+            },
+            {
+                key: 'mood_emotional',
+                label: 'Mood / Emotional state',
+                borderColor: '#ff7f0e',
+                backgroundColor: 'rgba(255, 127, 14, 0.15)'
+            },
+            {
+                key: 'energy_fatigue',
+                label: 'Energy / Fatigue',
+                borderColor: '#2ca02c',
+                backgroundColor: 'rgba(44, 160, 44, 0.15)'
+            },
+            {
+                key: 'pain_discomfort',
+                label: 'Pain / Discomfort',
+                borderColor: '#d62728',
+                backgroundColor: 'rgba(214, 39, 40, 0.15)'
+            },
+            {
+                key: 'mental_clarity',
+                label: 'Mental clarity',
+                borderColor: '#9467bd',
+                backgroundColor: 'rgba(148, 103, 189, 0.15)'
+            },
+            {
+                key: 'sleep_quality',
+                label: 'Sleep quality',
+                borderColor: '#8c564b',
+                backgroundColor: 'rgba(140, 86, 75, 0.15)'
+            },
+            {
+                key: 'feeling_supported',
+                label: 'Feeling supported',
+                borderColor: '#e377c2',
+                backgroundColor: 'rgba(227, 119, 194, 0.15)'
+            },
+            {
+                key: 'hope_meaning',
+                label: 'Hope / Meaning',
+                borderColor: '#17becf',
+                backgroundColor: 'rgba(23, 190, 207, 0.15)'
+            }
+        ].map(def => ({
+            label: def.label,
+            data: (series[def.key] || []).map(v => (v === null ? null : Number(v))),
+            borderColor: def.borderColor,
+            backgroundColor: def.backgroundColor,
+            tension: 0.3,
+            spanGaps: true,
+            fill: false,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+        }));
+
+        // Destroy any existing chart instance attached to this canvas to avoid duplicates
+        if (canvas._weeklyChartInstance) {
+            canvas._weeklyChartInstance.destroy();
+        }
+
+        canvas._weeklyChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dayLabels,
+                datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            // Show full date + value in tooltip
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return labels[index] || '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 1,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Rating (1–5)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Last 7 days'
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error initializing weekly stats chart:', error);
+    }
 }
 
 // Wellbeing Progress (Today) Functionality
@@ -236,90 +389,198 @@ function initProgressModal() {
     });
 }
 
-// Daily Reflection Functionality
+// Daily Reflection Functionality (backed by database, one per day)
 function initDailyReflection() {
     const reflectionTextarea = document.getElementById('daily-reflection');
     const saveReflectionBtn = document.getElementById('save-reflection-btn');
     const reflectionStatus = document.getElementById('reflection-status');
-    
+    const pastBtn = document.getElementById('past-reflections-btn');
+    const pastPanel = document.getElementById('past-reflections-panel');
+    const datePicker = document.getElementById('reflection-date-picker');
+
     if (!reflectionTextarea) return;
-    
-    // Load today's reflection
-    const today = new Date().toDateString();
-    const reflections = Storage.load('reflections') || {};
-    
-    if (reflections[today]) {
-        reflectionTextarea.value = reflections[today];
+
+    // Helper: format today as YYYY-MM-DD
+    function getTodayISO() {
+        return new Date().toISOString().split('T')[0];
     }
-    
-    // Auto-save with debounce
-    let saveTimeout;
-    reflectionTextarea.addEventListener('input', function() {
-        clearTimeout(saveTimeout);
-        reflectionStatus.textContent = 'Typing...';
-        reflectionStatus.className = 'text-muted';
-        
-        saveTimeout = setTimeout(() => {
-            saveReflection();
-            reflectionStatus.textContent = 'Auto-saved ✓';
-            reflectionStatus.className = 'text-success';
-            
-            setTimeout(() => {
-                reflectionStatus.textContent = 'Auto-saves as you type';
-                reflectionStatus.className = 'text-muted';
-            }, 2000);
-        }, 1000);
-    });
-    
+
+    // Track whether we are viewing a past reflection (read-only mode)
+    let viewingPast = false;
+    let viewingDate = getTodayISO();
+
+    function setStatus(message, type) {
+        if (!reflectionStatus) return;
+        reflectionStatus.textContent = message;
+        reflectionStatus.classList.remove('text-muted', 'text-success', 'text-danger');
+        if (type === 'success') {
+            reflectionStatus.classList.add('text-success');
+        } else if (type === 'error') {
+            reflectionStatus.classList.add('text-danger');
+        } else {
+            reflectionStatus.classList.add('text-muted');
+        }
+    }
+
+    async function loadReflectionForDate(dateStr) {
+        try {
+            const res = await fetch(`reflections-get.php?date=${encodeURIComponent(dateStr)}`);
+            if (!res.ok) {
+                console.error('Failed to load reflection for date', dateStr);
+                return;
+            }
+            const data = await res.json();
+            if (!data || !data.success) {
+                return;
+            }
+
+            const reflection = data.reflection;
+            if (reflection && reflection.content) {
+                reflectionTextarea.value = reflection.content;
+                setStatus(`Viewing reflection from ${dateStr}${dateStr === getTodayISO() ? ' (today)' : ''}.`, 'success');
+            } else {
+                reflectionTextarea.value = '';
+                setStatus(`No reflection saved for ${dateStr}.`, 'muted');
+            }
+        } catch (error) {
+            console.error('Error loading reflection:', error);
+        }
+    }
+
+    async function saveTodayReflection() {
+        const today = getTodayISO();
+        const content = reflectionTextarea.value.trim();
+
+        if (!content) {
+            setStatus('Reflection cannot be empty.', 'error');
+            return;
+        }
+
+        try {
+            setStatus('Saving...', 'muted');
+            saveReflectionBtn.disabled = true;
+
+            const payload = new URLSearchParams();
+            payload.append('date', today);
+            payload.append('content', content);
+
+            const res = await fetch('reflections-save.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: payload.toString(),
+            });
+
+            const data = await res.json();
+            if (data && data.success) {
+                setStatus('Reflection saved for today.', 'success');
+            } else {
+                const message = (data && data.message) || 'Error saving reflection.';
+                setStatus(message, 'error');
+            }
+        } catch (error) {
+            console.error('Error saving reflection:', error);
+            setStatus('Error saving reflection.', 'error');
+        } finally {
+            saveReflectionBtn.disabled = false;
+        }
+    }
+
+    // Initial load: today's reflection in editable mode
+    (async () => {
+        viewingPast = false;
+        viewingDate = getTodayISO();
+        reflectionTextarea.readOnly = false;
+        if (datePicker) {
+            datePicker.value = viewingDate;
+        }
+        await loadReflectionForDate(viewingDate);
+        if (!reflectionStatus.textContent) {
+            setStatus('Write your reflection and click Save Reflection. One reflection per day is stored.', 'muted');
+        }
+    })();
+
     // Manual save button
     if (saveReflectionBtn) {
-        saveReflectionBtn.addEventListener('click', function() {
-            saveReflection();
-            showAlert('Reflection saved!', 'success');
+        saveReflectionBtn.addEventListener('click', function () {
+            if (viewingPast && viewingDate !== getTodayISO()) {
+                setStatus('You are viewing a past reflection. Switch back to today to save a new one.', 'error');
+                return;
+            }
+            saveTodayReflection();
         });
     }
-    
-    function saveReflection() {
-        const today = new Date().toDateString();
-        const reflections = Storage.load('reflections') || {};
-        reflections[today] = reflectionTextarea.value;
-        Storage.save('reflections', reflections);
+
+    // Past reflections toggle
+    if (pastBtn && pastPanel && datePicker) {
+        pastBtn.addEventListener('click', function () {
+            const isHidden = pastPanel.classList.contains('d-none');
+            pastPanel.classList.toggle('d-none', !isHidden);
+            if (!isHidden) {
+                // Hiding panel: return to today in editable mode
+                viewingPast = false;
+                viewingDate = getTodayISO();
+                reflectionTextarea.readOnly = false;
+                datePicker.value = viewingDate;
+                loadReflectionForDate(viewingDate);
+            }
+        });
+
+        datePicker.addEventListener('change', function () {
+            const selected = datePicker.value;
+            if (!selected) return;
+            viewingDate = selected;
+            const isToday = selected === getTodayISO();
+            viewingPast = !isToday;
+            reflectionTextarea.readOnly = viewingPast;
+            loadReflectionForDate(selected);
+        });
     }
 }
 
-// Update Quick Stats
-function updateQuickStats() {
-    // Checklists completed today
-    const today = new Date().toDateString();
-    const todayChecklist = Storage.load('todayChecklist') || { date: today, completed: [] };
-    const supplements = Storage.load('supplements') || [];
-    const completedCount = todayChecklist.date === today ? todayChecklist.completed.length : 0;
-    const totalSupplements = supplements.length;
-    
+// Update Quick Stats (from database per logged-in user)
+async function updateQuickStats() {
     const completedChecklistsEl = document.getElementById('completed-checklists-today');
-    if (completedChecklistsEl) {
-        completedChecklistsEl.textContent = totalSupplements > 0 ? `${completedCount}/${totalSupplements}` : '0';
-    }
-    
-    // Total check-ins
-    const checkins = Storage.load('checkins') || [];
     const totalCheckinsEl = document.getElementById('total-checkins');
-    if (totalCheckinsEl) {
-        totalCheckinsEl.textContent = checkins.length;
-    }
-    
-    // Active treatments
-    const treatments = Storage.load('treatments') || [];
     const activeTreatmentsEl = document.getElementById('active-treatments');
-    if (activeTreatmentsEl) {
-        activeTreatmentsEl.textContent = treatments.length;
-    }
-    
-    // Days tracked (unique dates from check-ins)
-    const uniqueDates = new Set(checkins.map(c => c.date));
     const daysTrackedEl = document.getElementById('days-tracked');
-    if (daysTrackedEl) {
-        daysTrackedEl.textContent = uniqueDates.size;
+
+    // If the Quick Stats card isn’t on this page, nothing to do
+    if (!completedChecklistsEl && !totalCheckinsEl && !activeTreatmentsEl && !daysTrackedEl) {
+        return;
+    }
+
+    try {
+        const res = await fetch('stats-get.php');
+        if (!res.ok) {
+            console.error('❌ Failed to load quick stats');
+            return;
+        }
+
+        const payload = await res.json();
+        if (!payload || !payload.success) {
+            console.error('❌ Quick stats response invalid:', payload);
+            return;
+        }
+
+        const data = payload.data || {};
+
+        if (completedChecklistsEl) {
+            completedChecklistsEl.textContent = (data.checklists_complete != null) ? String(data.checklists_complete) : '0';
+        }
+
+        if (totalCheckinsEl) {
+            totalCheckinsEl.textContent = (data.total_check_ins != null) ? String(data.total_check_ins) : '0';
+        }
+
+        if (activeTreatmentsEl) {
+            activeTreatmentsEl.textContent = (data.active_treatments != null) ? String(data.active_treatments) : '0';
+        }
+
+        if (daysTrackedEl) {
+            daysTrackedEl.textContent = (data.days_tracked != null) ? String(data.days_tracked) : '0';
+        }
+    } catch (error) {
+        console.error('❌ Error loading quick stats:', error);
     }
 }
 

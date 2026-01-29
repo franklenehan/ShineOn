@@ -78,6 +78,44 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+/* Wellbeing modal styling */
+.wellbeing-modal-header {
+  background: linear-gradient(135deg, var(--primary-teal, #5FA8A8), var(--primary-blue, #4A90A4));
+  color: #FFDB58;
+  border-bottom: none;
+}
+
+.wellbeing-modal-header .modal-title,
+.wellbeing-modal-header .modal-title i {
+  color: #FFDB58;
+}
+
+/* Colourful emoji icons for wellbeing ratings */
+#progressModal .rating-option i {
+  font-size: 1.2rem;
+}
+
+/* From worst to best: red → amber → green */
+#progressModal .rating-scale .rating-option:nth-child(1) i {
+  color: #d9534f; /* red for very low */
+}
+
+#progressModal .rating-scale .rating-option:nth-child(2) i {
+  color: #f0ad4e; /* orange */
+}
+
+#progressModal .rating-scale .rating-option:nth-child(3) i {
+  color: #f7e463; /* soft yellow */
+}
+
+#progressModal .rating-scale .rating-option:nth-child(4) i {
+  color: var(--primary-teal, #5FA8A8); /* teal */
+}
+
+#progressModal .rating-scale .rating-option:nth-child(5) i {
+  color: #FFDB58; /* gold for excellent */
+}
+
 /* Base Styles */
 * {
     box-sizing: border-box;
