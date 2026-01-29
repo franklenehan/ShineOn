@@ -287,6 +287,11 @@ p {
     box-shadow: var(--shadow-md);
 }
 
+.card.home-quickstats-card {
+    box-shadow: var(--shadow-md);
+    min-height: 430px; /* Match approximate height of Weekly Stats card */
+}
+
 .card-header {
     font-weight: 600;
     font-size: var(--text-lg);

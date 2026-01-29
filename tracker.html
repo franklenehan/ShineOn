@@ -16,57 +16,6 @@
         <h1>Daily Supplement Tracker</h1>
         <p class="lead">Track your daily supplements and medications with notes</p>
 
-        <!-- My Supplements (Master List) -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-capsule-pill me-2"></i>My Supplements
-                </h5>
-            </div>
-            <div class="card-body">
-                <form id="master-supplement-form" class="row g-3 mb-3" novalidate>
-                    <input type="hidden" id="master-supplement-id" name="id" value="">
-                    <div class="col-md-4">
-                        <label for="master-supplement-name" class="form-label">Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="master-supplement-name" required placeholder="e.g., Vitamin D3">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="master-supplement-dose" class="form-label">Dosage <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="master-supplement-dose" required placeholder="e.g., 1000 IU">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="master-supplement-notes" class="form-label">Notes</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="master-supplement-notes" placeholder="Optional notes (time of day, with food, etc.)">
-                            <button type="button" class="btn btn-primary" id="master-save-supplement-btn">
-                                <i class="bi bi-check-circle me-1"></i><span id="master-supplement-save-label">Add</span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 30%;">Name</th>
-                                <th style="width: 30%;">Dosage</th>
-                                <th style="width: 30%;">Notes</th>
-                                <th style="width: 10%;" class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="master-supplements-body">
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-3">
-                                    <i class="bi bi-info-circle me-1"></i>No supplements saved yet. Add your regular supplements above.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
         <!-- Calendar Area / Daily Checklist -->
         <div class="row mt-4">
             <!-- Date Picker -->

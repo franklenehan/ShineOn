@@ -765,7 +765,18 @@ function initTreatmentsPage() {
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
     const exportBtn = document.getElementById('export-treatments-btn');
     const addTreatmentBtn = document.getElementById('add-treatment-btn');
-    
+
+    // My Supplements (master list) elements on Treatments page
+    const masterForm = document.getElementById('master-supplement-form');
+    const masterIdInput = document.getElementById('master-supplement-id');
+    const masterNameInput = document.getElementById('master-supplement-name');
+    const masterDoseInput = document.getElementById('master-supplement-dose');
+    const masterNotesInput = document.getElementById('master-supplement-notes');
+    const masterSaveBtn = document.getElementById('master-save-supplement-btn');
+    const masterSaveLabel = document.getElementById('master-supplement-save-label');
+    const masterTableBody = document.getElementById('master-supplements-body');
+    let masterSupplements = [];
+
     let treatmentModalInstance, deleteModalInstance;
     let editingIndex = -1;
     let deleteIndex = -1;
@@ -1069,6 +1080,179 @@ function initTreatmentsPage() {
     
     // Initial load
     loadTreatmentsTable();
+
+    // --- Initialise My Supplements master list on Treatments page (if present) ---
+    async function loadMasterSupplementsForTreatments() {
+        const masterTableBody = document.getElementById('master-supplements-body');
+        if (!masterTableBody) return;
+
+        try {
+            const response = await fetch('supplements-list.php', { method: 'GET' });
+            if (!response.ok) {
+                throw new Error('Network error loading supplements list');
+            }
+
+            const data = await response.json();
+            if (!data || !data.success || !Array.isArray(data.supplements)) {
+                throw new Error('Invalid supplements-list response');
+            }
+
+            const masterSupplements = data.supplements;
+
+            if (masterSupplements.length === 0) {
+                masterTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">
+                            <i class="bi bi-info-circle me-1"></i>No supplements saved yet. Add your regular supplements above.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let rowsHtml = '';
+            masterSupplements.forEach(s => {
+                rowsHtml += `
+                    <tr data-id="${s.id}">
+                        <td>${s.name ? s.name : ''}</td>
+                        <td>${s.dosage ? s.dosage : ''}</td>
+                        <td>${s.notes ? s.notes : ''}</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1 master-edit-btn" data-id="${s.id}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger master-delete-btn" data-id="${s.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            masterTableBody.innerHTML = rowsHtml;
+
+            // Wire up edit/delete buttons
+            masterTableBody.querySelectorAll('.master-edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    const sup = masterSupplements.find(s => String(s.id) === String(id));
+                    if (!sup) return;
+
+                    const masterIdInput = document.getElementById('master-supplement-id');
+                    const masterNameInput = document.getElementById('master-supplement-name');
+                    const masterDoseInput = document.getElementById('master-supplement-dose');
+                    const masterNotesInput = document.getElementById('master-supplement-notes');
+                    const masterSaveLabel = document.getElementById('master-supplement-save-label');
+
+                    if (masterIdInput) masterIdInput.value = sup.id;
+                    if (masterNameInput) masterNameInput.value = sup.name || '';
+                    if (masterDoseInput) masterDoseInput.value = sup.dosage || '';
+                    if (masterNotesInput) masterNotesInput.value = sup.notes || '';
+                    if (masterSaveLabel) masterSaveLabel.textContent = 'Update';
+                });
+            });
+
+            masterTableBody.querySelectorAll('.master-delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (!id) return;
+                    if (!confirm('Are you sure you want to delete this supplement from your list?')) return;
+
+                    const params = new URLSearchParams();
+                    params.append('id', id);
+
+                    try {
+                        const res = await fetch('supplements-delete.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString()
+                        });
+                        const result = await res.json();
+                        if (result && result.success) {
+                            showAlert('Supplement removed from your list.', 'info');
+                            await loadMasterSupplementsForTreatments();
+                        } else {
+                            showAlert((result && result.message) || 'Error deleting supplement.', 'danger');
+                        }
+                    } catch (err) {
+                        console.error('❌ Error deleting supplement:', err);
+                        showAlert('Error deleting supplement.', 'danger');
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('❌ Error loading master supplements:', error);
+            masterTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-danger py-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Error loading supplements list
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function clearMasterFormForTreatments() {
+        if (masterIdInput) masterIdInput.value = '';
+        if (masterNameInput) masterNameInput.value = '';
+        if (masterDoseInput) masterDoseInput.value = '';
+        if (masterNotesInput) masterNotesInput.value = '';
+        if (masterSaveLabel) masterSaveLabel.textContent = 'Add';
+    }
+
+    if (masterSaveBtn && masterForm) {
+        masterSaveBtn.addEventListener('click', async function () {
+            const masterNameInput = document.getElementById('master-supplement-name');
+            const masterDoseInput = document.getElementById('master-supplement-dose');
+            const masterNotesInput = document.getElementById('master-supplement-notes');
+            const masterIdInput = document.getElementById('master-supplement-id');
+
+            if (!masterNameInput || !masterDoseInput) return;
+
+            const name = masterNameInput.value.trim();
+            const dosage = masterDoseInput.value.trim();
+            const notes = masterNotesInput ? masterNotesInput.value.trim() : '';
+            const id = masterIdInput ? masterIdInput.value.trim() : '';
+
+            if (!name || !dosage) {
+                showAlert('Please enter supplement name and dosage.', 'warning');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.append('name', name);
+            params.append('dosage', dosage);
+            if (notes) params.append('notes', notes);
+            if (id) params.append('id', id);
+
+            try {
+                masterSaveBtn.disabled = true;
+
+                const res = await fetch('supplements-save.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+
+                const data = await res.json();
+                if (data && data.success) {
+                    showAlert(id ? 'Supplement updated.' : 'Supplement added.', 'success');
+                    clearMasterFormForTreatments();
+                    await loadMasterSupplementsForTreatments();
+                } else {
+                    showAlert((data && data.message) || 'Error saving supplement.', 'danger');
+                }
+            } catch (err) {
+                console.error('❌ Error saving supplement:', err);
+                showAlert('Error saving supplement.', 'danger');
+            } finally {
+                masterSaveBtn.disabled = false;
+            }
+        });
+    }
+
+    // Load supplements into the My Supplements card when on Treatments page
+    loadMasterSupplementsForTreatments();
 }
 
 // Tracker Page Functionality

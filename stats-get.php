@@ -38,6 +38,12 @@ try {
     $stmt->execute([':uid' => $userId]);
     $daysTrackedCount = (int)$stmt->fetchColumn();
 
+    // 5. Total supplements: total rows in supplements table per user
+    // (available for use in UI if needed)
+    $stmt = $pdo->prepare('SELECT COUNT(*) AS cnt FROM supplements WHERE user_id = :uid');
+    $stmt->execute([':uid' => $userId]);
+    $supplementsCount = (int)$stmt->fetchColumn();
+
     echo json_encode([
         'success' => true,
         'data' => [
@@ -45,6 +51,7 @@ try {
             'total_check_ins'     => $reflectionsCount,
             'active_treatments'   => $treatmentsCount,
             'days_tracked'        => $daysTrackedCount,
+            'total_supplements'   => $supplementsCount,
         ],
     ]);
 } catch (Throwable $e) {
