@@ -25,10 +25,26 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || '127.0.0.1',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'franks_cancer_journey',
+  database: process.env.DB_NAME || 'shine_on',
   waitForConnections: true,
   connectionLimit: 10,
 });
+
+// Express app init (must be before we call app.get/app.post, etc.)
+const app = express();
+app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || true, credentials: true }));
+app.use(express.json({ limit: '2mb' }));
+
+// Auth middleware: bind all API requests to a single local user id.
+// For now, this assumes you have a user row with id = 1 in the `users` table.
+// This avoids needing Firebase tokens while keeping per-user foreign keys valid.
+async function authMiddleware(req, res, next) {
+  req.userId = 1;
+  next();
+}
+
+// Protect all /api/* routes
+app.use('/api', authMiddleware);
 
 // Nutrition: Tips
 app.get('/api/nutrition/tips', async (req, res) => {
@@ -103,52 +119,7 @@ app.delete('/api/nutrition/recipes/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-const app = express();
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || true, credentials: true }));
-app.use(express.json({ limit: '2mb' }));
-
-// Auth middleware: verifies Firebase ID token and resolves user_id in MySQL
-async function authMiddleware(req, res, next) {
-  try {
-    const header = req.headers.authorization || '';
-    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-    if (!token) return res.status(401).json({ error: 'Missing token' });
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.uid = decoded.uid;
-
-    // Map uid -> users.id
-    const conn = await pool.getConnection();
-    try {
-      await conn.beginTransaction();
-      const [rows] = await conn.query('SELECT id FROM users WHERE uid = ? LIMIT 1', [req.uid]);
-      if (rows.length) {
-        req.userId = rows[0].id;
-      } else {
-        const [result] = await conn.query(
-          'INSERT INTO users (uid, email, display_name) VALUES (?, ?, ?)',
-          [req.uid, decoded.email || null, decoded.name || null]
-        );
-        req.userId = result.insertId;
-      }
-      await conn.commit();
-    } catch (e) {
-      await pool.query('ROLLBACK');
-      throw e;
-    } finally {
-      await pool.releaseConnection(conn);
-    }
-
-    next();
-  } catch (e) {
-    console.error('Auth error', e);
-    res.status(401).json({ error: 'Invalid token' });
-  }
-}
-
 app.get('/api/health', (req, res) => res.json({ ok: true }));
-
-// Protected routes
-app.use('/api', authMiddleware);
 
 // Checklists
 app.get('/api/checklists', async (req, res) => {

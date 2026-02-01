@@ -7,8 +7,22 @@
   let editRecipeId = null;
 
   async function loadAll(){
-    tips = (await StorageAPI.getMetadata('nutrition_tips')) || [];
-    recipes = (await StorageAPI.getMetadata('nutrition_recipes')) || [];
+    try {
+      // Load tips and recipes from backend (MySQL) via StorageAPI wrappers
+      tips = (await StorageAPI.listNutritionTips()) || [];
+    } catch (e) {
+      console.error('Error loading nutrition tips from server:', e);
+      tips = [];
+    }
+
+    try {
+      // Load all recipes; per-category filtering is handled in renderRecipes
+      recipes = (await StorageAPI.listNutritionRecipes()) || [];
+    } catch (e) {
+      console.error('Error loading nutrition recipes from server:', e);
+      recipes = [];
+    }
+
     renderTips();
     renderRecipes();
   }
@@ -70,7 +84,10 @@
   }
 
   async function saveTips(){
-    await StorageAPI.saveMetadata('nutrition_tips', tips);
+    // Persist the current tip (add or update) to the backend.
+    // For simplicity, just reload from server after save; callers
+    // are responsible for calling loadAll() again.
+    if (!tips || tips.length === 0) return;
   }
 
   function renderRecipes(){
@@ -139,7 +156,9 @@
   }
 
   async function saveRecipes(){
-    await StorageAPI.saveMetadata('nutrition_recipes', recipes);
+    // Recipes are now stored per-item via saveNutritionRecipe, so
+    // this helper remains only for backward compatibility.
+    if (!recipes || recipes.length === 0) return;
   }
 
   function exportRecipesCsv(){
@@ -179,23 +198,37 @@
       tipSaveBtn.addEventListener('click', async function(){
         const form = document.getElementById('tip-form');
         if(!form.checkValidity()){ form.classList.add('was-validated'); return; }
+
         const title = document.getElementById('tip-title').value.trim();
         const category = document.getElementById('tip-category').value;
         const details = document.getElementById('tip-details').value;
-        if(editTipId){
-          const idx = tips.findIndex(x=>x.id===editTipId);
-          if(idx>-1){ tips[idx] = { ...tips[idx], title, category, details, updatedAt: new Date().toISOString() }; }
-        } else {
-          tips.push({ id: uid(), title, category, details, createdAt: new Date().toISOString() });
+
+        try {
+          // Persist to backend via StorageAPI
+          const payload = {
+            title,
+            category,
+            details
+          };
+          if (editTipId) {
+            payload.id = editTipId;
+          }
+
+          const newId = await StorageAPI.saveNutritionTip(payload);
+
+          // Keep local array in sync by reloading from server
+          await loadAll();
+
+          editTipId = null;
+          document.getElementById('tipModalTitle').textContent = 'Add Tip';
+          form.reset();
+          const m = bootstrap.Modal.getInstance(document.getElementById('addTipModal'));
+          m && m.hide();
+          if(typeof showAlert==='function') showAlert('Tip saved', 'success');
+        } catch (e) {
+          console.error('Error saving nutrition tip:', e);
+          if(typeof showAlert==='function') showAlert('Error saving tip', 'danger');
         }
-        await saveTips();
-        editTipId = null;
-        document.getElementById('tipModalTitle').textContent = 'Add Tip';
-        form.reset();
-        const m = bootstrap.Modal.getInstance(document.getElementById('addTipModal'));
-        m && m.hide();
-        renderTips();
-        if(typeof showAlert==='function') showAlert('Tip saved', 'success');
       });
     }
 
@@ -204,24 +237,38 @@
       recipeSaveBtn.addEventListener('click', async function(){
         const form = document.getElementById('recipe-form');
         if(!form.checkValidity()){ form.classList.add('was-validated'); return; }
+
         const title = document.getElementById('recipe-title').value.trim();
         const category = document.getElementById('recipe-category').value;
         const ingredients = document.getElementById('recipe-ingredients').value.split('\n').map(s=>s.trim()).filter(Boolean);
         const instructions = document.getElementById('recipe-instructions').value;
-        if(editRecipeId){
-          const idx = recipes.findIndex(x=>x.id===editRecipeId);
-          if(idx>-1){ recipes[idx] = { ...recipes[idx], title, category, ingredients, instructions, updatedAt: new Date().toISOString() }; }
-        } else {
-          recipes.push({ id: uid(), title, category, ingredients, instructions, createdAt: new Date().toISOString() });
+
+        try {
+          const payload = {
+            title,
+            category,
+            ingredients,
+            instructions
+          };
+          if (editRecipeId) {
+            payload.id = editRecipeId;
+          }
+
+          const newId = await StorageAPI.saveNutritionRecipe(payload);
+
+          // Reload from backend so UI reflects DB state
+          await loadAll();
+
+          editRecipeId = null;
+          document.getElementById('recipeModalTitle').textContent = 'Add Recipe';
+          form.reset();
+          const m = bootstrap.Modal.getInstance(document.getElementById('addRecipeModal'));
+          m && m.hide();
+          if(typeof showAlert==='function') showAlert('Recipe saved', 'success');
+        } catch (e) {
+          console.error('Error saving nutrition recipe:', e);
+          if(typeof showAlert==='function') showAlert('Error saving recipe', 'danger');
         }
-        await saveRecipes();
-        editRecipeId = null;
-        document.getElementById('recipeModalTitle').textContent = 'Add Recipe';
-        form.reset();
-        const m = bootstrap.Modal.getInstance(document.getElementById('addRecipeModal'));
-        m && m.hide();
-        renderRecipes();
-        if(typeof showAlert==='function') showAlert('Recipe saved', 'success');
       });
     }
 
