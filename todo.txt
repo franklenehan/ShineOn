@@ -1,0 +1,40 @@
+HOMEPAGE
+    1. Fix background colour of logo
+    2. Remove Checklists from Quick Stats, add number of supplements 
+    3. Increase the same of Quick Stats so it's level with Weekly Stats Graph
+    4. Investigate Reminders to update Stats/Wellness etc
+    5. Add top padding to first card, add some space between header and first card
+    6. Investigate adding newsfeed API to homepage, new positive stories regarding treatments etc
+TREATMENTS
+    1. Remove Attachments colomn from table
+    2. Add colour to Edit treatments button background
+    3. Update colour scheme to Edit/Add treatment cards
+    4. Add colour to background of Edit supplements button
+    5.
+NUTRITION
+    1. Move Tips cards down so it's not covering the header
+    2. On the cards, put BR between title and category
+    3. Update colour scheme on Add/Edit Recipes card
+    4. On recipe table add tabs for categories and accordion for recipes
+    5.
+INVESTIGATIONS
+    1. Add background colour to Search button
+    2. Test delete button and export to CSV feature
+    3.
+    4.
+    5.
+FUTURE
+    1. Repair the opacity of the background of the Your Future Plans card
+    2. Double check all inserts are inserting to database and not locally
+    3. Investigate what more can be done with My Visions Card, is it needed, whats it's function#
+ACCOUNT
+    1. Add a Account page
+    2. Add option to change password
+    3. Add option to update profile picture/avatar
+LOGIN
+    1. Update colour scheme in Login card
+FOOTER
+    1. Full redesign of footer
+    2. Remove local data comments
+    3. Add medical disclaimer
+    4. Add contacts details and social media links

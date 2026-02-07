@@ -542,10 +542,11 @@ async function updateQuickStats() {
     const completedChecklistsEl = document.getElementById('completed-checklists-today');
     const totalCheckinsEl = document.getElementById('total-checkins');
     const activeTreatmentsEl = document.getElementById('active-treatments');
+    const totalSupplementsEl = document.getElementById('total-supplements');
     const daysTrackedEl = document.getElementById('days-tracked');
 
     // If the Quick Stats card isn’t on this page, nothing to do
-    if (!completedChecklistsEl && !totalCheckinsEl && !activeTreatmentsEl && !daysTrackedEl) {
+    if (!completedChecklistsEl && !totalCheckinsEl && !activeTreatmentsEl && !totalSupplementsEl && !daysTrackedEl) {
         return;
     }
 
@@ -574,6 +575,10 @@ async function updateQuickStats() {
 
         if (activeTreatmentsEl) {
             activeTreatmentsEl.textContent = (data.active_treatments != null) ? String(data.active_treatments) : '0';
+        }
+
+        if (totalSupplementsEl) {
+            totalSupplementsEl.textContent = (data.total_supplements != null) ? String(data.total_supplements) : '0';
         }
 
         if (daysTrackedEl) {

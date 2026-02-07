@@ -289,7 +289,7 @@ p {
 
 .card.home-quickstats-card {
     box-shadow: var(--shadow-md);
-    min-height: 430px; /* Match approximate height of Weekly Stats card */
+    min-height: 500px; /* Taller so it aligns visually with Weekly Stats card */
 }
 
 .card-header {
