@@ -207,8 +207,8 @@ app.put('/api/metadata/:key', async (req, res) => {
   const { key } = req.params;
   const value = req.body;
   await pool.query(
-    `INSERT INTO metadata (user_id, 
-      \`key\`, value, updated_at) VALUES (?, ?, CAST(? AS JSON), NOW())
+    `INSERT INTO metadata (user_id, \`key\`, value, updated_at)
+     VALUES (?, ?, ?, NOW())
      ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = NOW()`,
     [req.userId, key, JSON.stringify(value)]
   );

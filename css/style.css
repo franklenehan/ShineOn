@@ -427,6 +427,17 @@ textarea.form-control {
     box-shadow: var(--shadow-md);
 }
 
+.btn-add-tip {
+    background-color: var(--primary-teal) !important;
+    color: #FFFFFF !important;
+    border-color: var(--primary-teal) !important;
+}
+
+.btn-add-tip:hover {
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+}
+
 .btn-warning {
     background-color: var(--warning);
     color: var(--neutral-dark);
@@ -565,6 +576,40 @@ textarea.form-control {
 
 .modal-header.bg-danger {
     background-color: var(--danger) !important;
+}
+
+/* Nutrition tip view modal header - match card navy + gold styling */
+.tip-modal-header {
+    background-color: var(--primary-blue) !important; /* deep navy */
+    color: #FFDB58 !important; /* gold */
+    border-bottom: none;
+}
+
+.tip-modal-header .modal-title,
+.tip-modal-header .modal-title i,
+.tip-modal-header span {
+    color: #FFDB58 !important;
+}
+
+/* Tip modal header navigation arrows - simple icon buttons */
+.tip-nav-btn {
+    background: transparent;
+    border: 0;
+    padding: 0 0.25rem;
+    line-height: 1;
+    color: rgba(255,255,255,0.75); /* light grey/soft white like close icon */
+}
+
+.tip-nav-btn i {
+    font-size: 1rem;
+}
+
+.tip-nav-btn:focus {
+    outline: none;
+}
+
+.tip-nav-btn:hover {
+    color: #FFFFFF;
 }
 
 /* Motivational Banner */

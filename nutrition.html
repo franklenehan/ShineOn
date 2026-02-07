@@ -19,7 +19,7 @@
         <p class="lead text-muted mb-0">Eat to stay strong: low sugar, smart carbs, quality protein, and nourishing recipes.</p>
       </div>
       <div class="d-flex gap-2">
-        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addTipModal">
+        <button class="btn btn-outline-success btn-add-tip" data-bs-toggle="modal" data-bs-target="#addTipModal">
           <i class="bi bi-emoji-smile me-1"></i>Add Tip
         </button>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecipeModal">
@@ -38,7 +38,7 @@
           <i class="bi bi-lightbulb" style="font-size:2rem;"></i>
           <p class="mt-2 mb-0">No tips yet. Click "Add Tip" to get started.</p>
         </div>
-        <div id="tips-list" class="row g-3"></div>
+        <div id="tips-list" class="list-group"></div>
       </div>
     </div>
 
@@ -92,7 +92,7 @@
   <div class="modal fade" id="addTipModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header bg-success text-white">
+        <div class="modal-header tip-modal-header">
           <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i><span id="tipModalTitle">Add Tip</span></h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -127,6 +127,39 @@
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Cancel</button>
           <button class="btn btn-success" id="save-tip-btn"><i class="bi bi-check-circle me-1"></i>Save Tip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Tip Modal -->
+  <div class="modal fade" id="viewTipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header tip-modal-header d-flex justify-content-between align-items-center">
+          <h5 class="modal-title d-flex align-items-center gap-2 mb-0">
+            <span id="view-tip-title"></span>
+            <span id="view-tip-category" class="badge bg-light text-dark"></span>
+          </h5>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="tip-nav-btn" id="view-tip-prev-btn" aria-label="Previous tip">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <button type="button" class="tip-nav-btn" id="view-tip-next-btn" aria-label="Next tip">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div id="view-tip-details" class="small"></div>
+        </div>
+        <div class="modal-footer d-flex justify-content-end">
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-danger btn-sm" id="view-tip-delete-btn"><i class="bi bi-trash me-1"></i>Delete</button>
+            <button class="btn btn-success" id="view-tip-edit-btn"><i class="bi bi-pencil me-1"></i>Edit</button>
+          </div>
         </div>
       </div>
     </div>
@@ -184,13 +217,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/storage.js"></script>
-  <!-- Firebase SDK (Compat) and App setup -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/firebase-init.js"></script>
-  <script src="js/firestore-sync.js"></script>
   <script src="js/components.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/nutrition.js"></script>

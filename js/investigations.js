@@ -58,7 +58,18 @@ async function loadResearch() {
     try {
         // Get research from storage (using metadata store)
         const stored = await StorageAPI.getMetadata('research');
-        allResearch = stored || [];
+        // Metadata may be returned as a JSON string or already-parsed value
+        let parsed = stored;
+        if (typeof stored === 'string') {
+            try {
+                parsed = JSON.parse(stored);
+            } catch (e) {
+                console.error('❌ Failed to parse research metadata JSON, defaulting to []:', e);
+                parsed = [];
+            }
+        }
+
+        allResearch = Array.isArray(parsed) ? parsed : [];
         filteredResearch = [...allResearch];
         
         console.log(`✅ Loaded ${allResearch.length} research entries`);

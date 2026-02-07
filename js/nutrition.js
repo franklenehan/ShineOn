@@ -5,6 +5,7 @@
   let recipes = [];
   let editTipId = null;
   let editRecipeId = null;
+  let viewTipId = null;
 
   async function loadAll(){
     try {
@@ -38,27 +39,45 @@
     empty.style.display = 'none';
     const frag = document.createDocumentFragment();
     tips.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).forEach(t => {
-      const col = document.createElement('div');
-      col.className = 'col-md-6';
-      col.innerHTML = `
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h6 class="mb-0">${escapeHtml(t.title)}</h6>
-              <span class="badge bg-light text-dark">${escapeHtml(t.category||'General')}</span>
-            </div>
-            ${t.details ? `<p class="mb-0 small text-muted">${escapeHtml(t.details).replace(/\n/g,'<br>')}</p>` : ''}
-          </div>
-          <div class="card-footer bg-light d-flex justify-content-end gap-2">
-            <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${t.id}"><i class="bi bi-pencil"></i></button>
-            <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${t.id}"><i class="bi bi-trash"></i></button>
-          </div>
-        </div>`;
-      frag.appendChild(col);
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+      item.setAttribute('data-id', t.id);
+      item.innerHTML = `
+        <div class="me-3 text-start">
+          <div class="fw-semibold">${escapeHtml(t.title)}</div>
+        </div>
+        <span class="badge bg-light text-dark ms-auto">${escapeHtml(t.category||'General')}</span>`;
+      frag.appendChild(item);
     });
     list.appendChild(frag);
-    list.querySelectorAll('button[data-action]')
-      .forEach(btn => btn.addEventListener('click', tipActionHandler));
+
+    list.querySelectorAll('.list-group-item-action')
+      .forEach(btn => btn.addEventListener('click', onTipListItemClick));
+  }
+
+  function onTipListItemClick(e){
+    const id = e.currentTarget.getAttribute('data-id');
+    if(id == null) return;
+    openTipView(id);
+  }
+
+  function openTipView(id){
+    const t = tips.find(x=>String(x.id)===String(id));
+    if(!t) return;
+    viewTipId = t.id;
+    const titleEl = document.getElementById('view-tip-title');
+    const catEl = document.getElementById('view-tip-category');
+    const detailsEl = document.getElementById('view-tip-details');
+    if(titleEl) titleEl.textContent = t.title || '';
+    if(catEl) catEl.textContent = t.category || 'General';
+    if(detailsEl) detailsEl.innerHTML = t.details ? escapeHtml(t.details).replace(/\n/g,'<br>') : '<span class="text-muted">No details provided.</span>';
+
+    const modalEl = document.getElementById('viewTipModal');
+    if(modalEl){
+      const m = bootstrap.Modal.getOrCreateInstance(modalEl);
+      m.show();
+    }
   }
 
   function tipActionHandler(e){
@@ -106,7 +125,17 @@
       list.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).forEach(r => {
         const col = document.createElement('div');
         col.className = 'col-md-6';
-        const ingredients = (r.ingredients||[]).map(i=>`<li>${escapeHtml(i)}</li>`).join('');
+
+        let ingredientsArr;
+        if (Array.isArray(r.ingredients)) {
+          ingredientsArr = r.ingredients;
+        } else if (typeof r.ingredients === 'string') {
+          ingredientsArr = r.ingredients.split('\n').map(s => s.trim()).filter(Boolean);
+        } else {
+          ingredientsArr = [];
+        }
+
+        const ingredients = ingredientsArr.map(i=>`<li>${escapeHtml(i)}</li>`).join('');
         col.innerHTML = `
           <div class="card h-100">
             <div class="card-body">
@@ -286,6 +315,96 @@
       editRecipeId = null; const form = document.getElementById('recipe-form'); if(form){ form.reset(); form.classList.remove('was-validated'); }
       document.getElementById('recipeModalTitle').textContent = 'Add Recipe';
     }); }
+
+    const viewTipEditBtn = document.getElementById('view-tip-edit-btn');
+    if(viewTipEditBtn){
+      viewTipEditBtn.addEventListener('click', function(){
+        if(!viewTipId) return;
+        const t = tips.find(x=>x.id===viewTipId);
+        if(!t) return;
+        editTipId = viewTipId;
+        document.getElementById('tip-title').value = t.title || '';
+        document.getElementById('tip-category').value = t.category || 'General';
+        document.getElementById('tip-details').value = t.details || '';
+        document.getElementById('tipModalTitle').textContent = 'Edit Tip';
+
+        const viewModalEl = document.getElementById('viewTipModal');
+        const viewModal = bootstrap.Modal.getInstance(viewModalEl);
+        viewModal && viewModal.hide();
+
+        const editModal = new bootstrap.Modal(document.getElementById('addTipModal'));
+        editModal.show();
+      });
+    }
+
+    const viewTipDeleteBtn = document.getElementById('view-tip-delete-btn');
+    if(viewTipDeleteBtn){
+      viewTipDeleteBtn.addEventListener('click', async function(){
+        if(!viewTipId) return;
+        const id = viewTipId;
+        const t = tips.find(x=>x.id===id);
+        if(!t) return;
+        if(!confirm('Delete this tip?')) return;
+
+        try {
+          // Permanently delete from backend (MySQL)
+          await StorageAPI.deleteNutritionTip(id);
+
+          // Reload tips from server so UI matches DB state
+          await loadAll();
+
+          const viewModalEl = document.getElementById('viewTipModal');
+          const viewModal = bootstrap.Modal.getInstance(viewModalEl);
+          viewModal && viewModal.hide();
+          viewTipId = null;
+          if(typeof showAlert==='function') showAlert('Tip deleted', 'success');
+        } catch (e) {
+          console.error('Error deleting nutrition tip:', e);
+          if(typeof showAlert==='function') showAlert('Error deleting tip', 'danger');
+        }
+      });
+    }
+
+    const viewTipModalEl = document.getElementById('viewTipModal');
+    if(viewTipModalEl){
+      viewTipModalEl.addEventListener('hidden.bs.modal', function(){
+        viewTipId = null;
+      });
+    }
+
+    function navigateTip(step){
+      if(!tips || tips.length === 0) return;
+      // Sort tips in the same order as renderTips
+      const ordered = tips.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+      let idx = ordered.findIndex(t => String(t.id) === String(viewTipId));
+      if(idx === -1){
+        idx = 0;
+      } else {
+        idx = (idx + step + ordered.length) % ordered.length;
+      }
+      const nextTip = ordered[idx];
+      if(nextTip){
+        openTipView(nextTip.id);
+      }
+    }
+
+    const prevBtn = document.getElementById('view-tip-prev-btn');
+    if(prevBtn){
+      prevBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        navigateTip(-1);
+      });
+    }
+
+    const nextBtn = document.getElementById('view-tip-next-btn');
+    if(nextBtn){
+      nextBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        navigateTip(1);
+      });
+    }
 
     loadAll();
   });
