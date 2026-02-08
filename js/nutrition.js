@@ -112,53 +112,108 @@
   function renderRecipes(){
     const categories = ['Breakfast','Lunch','Dinner','Snacks'];
     let total = 0;
+
     categories.forEach(cat => {
-      const listEl = document.getElementById('list-'+cat.toLowerCase());
-      const emptyEl = document.getElementById('empty-'+cat.toLowerCase());
-      if(!listEl||!emptyEl) return;
-      const list = recipes.filter(r=>r.category===cat);
+      const key = cat.toLowerCase();
+      const accEl = document.getElementById('accordion-'+key);
+      const emptyEl = document.getElementById('empty-'+key);
+      if (!accEl || !emptyEl) return;
+
+      const list = recipes.filter(r => r.category === cat);
       total += list.length;
-      listEl.innerHTML = '';
-      if(!list.length){ emptyEl.style.display='block'; return; }
-      emptyEl.style.display='none';
+
+      accEl.innerHTML = '';
+      if (!list.length) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
       const frag = document.createDocumentFragment();
-      list.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).forEach(r => {
-        const col = document.createElement('div');
-        col.className = 'col-md-6';
 
-        let ingredientsArr;
-        if (Array.isArray(r.ingredients)) {
-          ingredientsArr = r.ingredients;
-        } else if (typeof r.ingredients === 'string') {
-          ingredientsArr = r.ingredients.split('\n').map(s => s.trim()).filter(Boolean);
-        } else {
-          ingredientsArr = [];
-        }
+      list
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .forEach((r, index) => {
+          // Normalise ingredients to an array
+          let ingredientsArr;
+          if (Array.isArray(r.ingredients)) {
+            ingredientsArr = r.ingredients;
+          } else if (typeof r.ingredients === 'string') {
+            const raw = r.ingredients.trim();
+            // Handle JSON-stringified arrays like ["Eggs","Bread"]
+            if (raw.startsWith('[') && raw.endsWith(']')) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                  ingredientsArr = parsed;
+                } else {
+                  ingredientsArr = raw.split('\n').map(s => s.trim()).filter(Boolean);
+                }
+              } catch (e) {
+                ingredientsArr = raw.split('\n').map(s => s.trim()).filter(Boolean);
+              }
+            } else {
+              ingredientsArr = raw.split('\n').map(s => s.trim()).filter(Boolean);
+            }
+          } else {
+            ingredientsArr = [];
+          }
 
-        const ingredients = ingredientsArr.map(i=>`<li>${escapeHtml(i)}</li>`).join('');
-        col.innerHTML = `
-          <div class="card h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <h6 class="mb-0">${escapeHtml(r.title)}</h6>
-                <span class="badge bg-light text-dark">${escapeHtml(r.category)}</span>
+          const ingredients = ingredientsArr
+            .map(i => `
+              <li class="form-check small mb-1">
+                <input class="form-check-input me-2" type="checkbox" value="">
+                <label class="form-check-label">
+                  ${escapeHtml(i)}
+                </label>
+              </li>`)
+            .join('');
+
+          const itemId = `acc-${key}-${r.id || index}`;
+          const headingId = `${itemId}-heading`;
+          const collapseId = `${itemId}-body`;
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'accordion-item';
+          wrapper.innerHTML = `
+            <h2 class="accordion-header" id="${headingId}">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}">
+                ${escapeHtml(r.title)}
+              </button>
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headingId}" data-bs-parent="#accordion-${key}">
+              <div class="accordion-body">
+                ${ingredients ? `
+                  <div class="mb-3">
+                    <strong class="small d-block mb-1">Ingredients</strong>
+                    <ul class="list-unstyled mb-0">
+                      ${ingredients}
+                    </ul>
+                  </div>` : ''}
+                ${r.instructions ? `
+                  <div class="mb-3">
+                    <strong class="small d-block mb-1">Instructions</strong>
+                    <div class="small text-muted mb-0">${escapeHtml(r.instructions).replace(/\n/g,'<br>')}</div>
+                  </div>` : ''}
+                <div class="d-flex justify-content-end gap-2 mt-2">
+                  <button class="btn btn-sm btn-outline-primary recipe-edit-btn" data-r-action="edit" data-id="${r.id}"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger" data-r-action="delete" data-id="${r.id}"><i class="bi bi-trash"></i></button>
+                </div>
               </div>
-              ${ingredients ? `<div class="mb-2"><strong class="small">Ingredients</strong><ul class="small mb-0">${ingredients}</ul></div>` : ''}
-              ${r.instructions ? `<div class="small text-muted">${escapeHtml(r.instructions).replace(/\n/g,'<br>')}</div>` : ''}
             </div>
-            <div class="card-footer bg-light d-flex justify-content-end gap-2">
-              <button class="btn btn-sm btn-outline-primary" data-r-action="edit" data-id="${r.id}"><i class="bi bi-pencil"></i></button>
-              <button class="btn btn-sm btn-outline-danger" data-r-action="delete" data-id="${r.id}"><i class="bi bi-trash"></i></button>
-            </div>
-          </div>`;
-        frag.appendChild(col);
-      });
-      listEl.appendChild(frag);
-      listEl.querySelectorAll('button[data-r-action]')
+          `;
+          frag.appendChild(wrapper);
+        });
+
+      accEl.appendChild(frag);
+
+      accEl.querySelectorAll('button[data-r-action]')
         .forEach(btn => btn.addEventListener('click', recipeActionHandler));
     });
+
     const countEl = document.getElementById('recipes-count');
-    if(countEl) countEl.textContent = String(total);
+    if (countEl) countEl.textContent = String(total);
   }
 
   function recipeActionHandler(e){
@@ -170,7 +225,27 @@
       editRecipeId = id;
       document.getElementById('recipe-title').value = r.title || '';
       document.getElementById('recipe-category').value = r.category || '';
-      document.getElementById('recipe-ingredients').value = (r.ingredients||[]).join('\n');
+      // Normalise ingredients to an array for editing
+      let ingArr;
+      if (Array.isArray(r.ingredients)) {
+        ingArr = r.ingredients;
+      } else if (typeof r.ingredients === 'string') {
+        const raw = r.ingredients.trim();
+        if (raw.startsWith('[') && raw.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(raw);
+            ingArr = Array.isArray(parsed) ? parsed : [raw];
+          } catch (e) {
+            ingArr = raw.split('\n').map(s => s.trim()).filter(Boolean);
+          }
+        } else {
+          ingArr = raw.split('\n').map(s => s.trim()).filter(Boolean);
+        }
+      } else {
+        ingArr = [];
+      }
+
+      document.getElementById('recipe-ingredients').value = ingArr.join('\n');
       document.getElementById('recipe-instructions').value = r.instructions || '';
       document.getElementById('recipeModalTitle').textContent = 'Edit Recipe';
       const modal = new bootstrap.Modal(document.getElementById('addRecipeModal'));

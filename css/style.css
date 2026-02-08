@@ -1168,3 +1168,86 @@ textarea.form-control {
 #newsFeed .news-card:last-child {
   margin-bottom: 0;
 }
+
+/* Treatments table: Edit button styling */
+.edit-treatment {
+  background-color: var(--primary-teal);
+  border-color: var(--primary-teal);
+  color: #ffffff;
+}
+
+.edit-treatment:hover,
+.edit-treatment:focus {
+  background-color: #008c8c; /* slightly darker teal on hover */
+  border-color: #008c8c;
+  color: #ffffff;
+}
+
+/* Supplements table: Edit button styling (match treatments) */
+.master-edit-btn {
+  background-color: var(--primary-teal);
+  border-color: var(--primary-teal);
+  color: #ffffff;
+}
+
+.master-edit-btn:hover,
+.master-edit-btn:focus {
+  background-color: #008c8c;
+  border-color: #008c8c;
+  color: #ffffff;
+}
+
+/* Nutrition recipes: Edit button styling */
+.recipe-edit-btn {
+  background-color: var(--primary-teal);
+  border-color: var(--primary-teal);
+  color: #ffffff;
+}
+
+.recipe-edit-btn:hover,
+.recipe-edit-btn:focus {
+  background-color: #008c8c;
+  border-color: #008c8c;
+  color: #ffffff;
+}
+
+/* Investigations table: action buttons */
+.investigation-edit-btn {
+  background-color: var(--primary-teal);
+  border-color: var(--primary-teal);
+  color: #ffffff;
+}
+
+.investigation-edit-btn:hover,
+.investigation-edit-btn:focus {
+  background-color: #008c8c;
+  border-color: #008c8c;
+  color: #ffffff;
+}
+
+.investigation-view-btn {
+  background-color: #6ccf8b; /* soft green */
+  border-color: #6ccf8b;
+  color: #ffffff;
+}
+
+.investigation-view-btn:hover,
+.investigation-view-btn:focus {
+  background-color: #58b975;
+  border-color: #58b975;
+  color: #ffffff;
+}
+
+/* Investigations page: Search button */
+.investigation-search-btn {
+  background-color: #6ccf8b; /* soft green */
+  border-color: #6ccf8b;
+  color: #ffffff;
+}
+
+.investigation-search-btn:hover,
+.investigation-search-btn:focus {
+  background-color: #58b975;
+  border-color: #58b975;
+  color: #ffffff;
+}

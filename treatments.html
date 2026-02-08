@@ -37,18 +37,17 @@
                     <table class="table table-hover table-striped mb-0" id="treatments-table">
                         <thead class="table-light">
                             <tr>
-                                <th scope="col" style="width: 12%;">Date</th>
-                                <th scope="col" style="width: 20%;">Treatment Type</th>
-                                <th scope="col" style="width: 18%;">Clinic/Location</th>
-                                <th scope="col" style="width: 30%;">Outcome/Notes</th>
-                                <th scope="col" style="width: 10%;">Attachments</th>
+                                <th scope="col" style="width: 15%;">Date</th>
+                                <th scope="col" style="width: 25%;">Treatment Type</th>
+                                <th scope="col" style="width: 25%;">Clinic/Location</th>
+                                <th scope="col" style="width: 25%;">Outcome/Notes</th>
                                 <th scope="col" style="width: 10%;" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="treatments-table-body">
                             <!-- Will be populated by JavaScript -->
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-5">
+                                <td colspan="5" class="text-center text-muted py-5">
                                     <i class="bi bi-clipboard-plus" style="font-size: 3rem;"></i>
                                     <p class="mt-2">No treatments recorded yet. Click "Add Treatment" to get started.</p>
                                 </td>
@@ -135,7 +134,7 @@
     <div class="modal fade" id="treatmentModal" tabindex="-1" aria-labelledby="treatmentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header tip-modal-header">
                     <h5 class="modal-title" id="treatmentModalLabel">
                         <i class="bi bi-clipboard-plus me-2"></i>Add Treatment
                     </h5>

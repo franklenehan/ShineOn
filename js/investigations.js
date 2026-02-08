@@ -356,10 +356,10 @@ function createResearchRow(research) {
         </td>
         <td>
             <div class="btn-group btn-group-sm" role="group">
-                <button class="btn btn-outline-info" onclick="viewResearchDetails(${research.id})" title="View Details">
+                <button class="btn investigation-view-btn" onclick="viewResearchDetails(${research.id})" title="View Details">
                     <i class="bi bi-eye"></i>
                 </button>
-                <button class="btn btn-outline-primary" onclick="editResearch(${research.id})" title="Edit">
+                <button class="btn investigation-edit-btn" onclick="editResearch(${research.id})" title="Edit">
                     <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-outline-danger" onclick="deleteResearch(${research.id})" title="Delete">

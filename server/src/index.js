@@ -101,7 +101,7 @@ app.post('/api/nutrition/recipes', async (req, res) => {
   if (!category) return res.status(400).json({ error: 'category required' });
   if (id) {
     await pool.query(
-      'UPDATE nutrition_recipes SET title = ?, category = ?, ingredients = CAST(? AS JSON), instructions = ?, updated_at = NOW() WHERE id = ? AND user_id = ?',
+      'UPDATE nutrition_recipes SET title = ?, category = ?, ingredients = ?, instructions = ?, updated_at = NOW() WHERE id = ? AND user_id = ?',
       [title, category, JSON.stringify(ingredients), instructions, id, req.userId]
     );
     return res.json({ id, ok: true });

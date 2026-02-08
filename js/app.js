@@ -821,7 +821,7 @@ function initTreatmentsPage() {
         if (treatments.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">
+                    <td colspan="5" class="text-center text-muted py-5">
                         <i class="bi bi-clipboard-plus" style="font-size: 3rem;"></i>
                         <p class="mt-2">No treatments recorded yet. Click "Add Treatment" to get started.</p>
                     </td>
@@ -848,11 +848,6 @@ function initTreatmentsPage() {
                         <div class="treatment-notes">
                             ${treatment.notes ? truncateText(treatment.notes, 100) : '<span class="text-muted">No notes</span>'}
                         </div>
-                    </td>
-                    <td>
-                        ${treatment.attachments ? 
-                            `<i class="bi bi-paperclip text-primary"></i> <small>${treatment.attachments}</small>` : 
-                            '<span class="text-muted">—</span>'}
                     </td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm" role="group">

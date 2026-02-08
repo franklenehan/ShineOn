@@ -50,35 +50,38 @@
         <h5 class="mb-0"><i class="bi bi-egg-fried me-2"></i>Recipes</h5>
       </div>
       <div class="card-body">
-        <ul class="nav nav-pills mb-3" id="recipeTabs" role="tablist">
+        <!-- Recipe category tabs -->
+        <ul class="nav nav-tabs mb-3" id="recipeTabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-breakfast" data-bs-toggle="pill" data-bs-target="#pane-breakfast" type="button" role="tab">Breakfast</button>
+            <button class="nav-link active" id="tab-breakfast" data-bs-toggle="tab" data-bs-target="#pane-breakfast" type="button" role="tab" aria-controls="pane-breakfast" aria-selected="true">Breakfast</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-lunch" data-bs-toggle="pill" data-bs-target="#pane-lunch" type="button" role="tab">Lunch</button>
+            <button class="nav-link" id="tab-lunch" data-bs-toggle="tab" data-bs-target="#pane-lunch" type="button" role="tab" aria-controls="pane-lunch" aria-selected="false">Lunch</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-dinner" data-bs-toggle="pill" data-bs-target="#pane-dinner" type="button" role="tab">Dinner</button>
+            <button class="nav-link" id="tab-dinner" data-bs-toggle="tab" data-bs-target="#pane-dinner" type="button" role="tab" aria-controls="pane-dinner" aria-selected="false">Dinner</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-snacks" data-bs-toggle="pill" data-bs-target="#pane-snacks" type="button" role="tab">Snacks</button>
+            <button class="nav-link" id="tab-snacks" data-bs-toggle="tab" data-bs-target="#pane-snacks" type="button" role="tab" aria-controls="pane-snacks" aria-selected="false">Snacks</button>
           </li>
         </ul>
+
+        <!-- Tab panes for each category, ready for accordions -->
         <div class="tab-content" id="recipePanes">
-          <div class="tab-pane fade show active" id="pane-breakfast" role="tabpanel">
-            <div id="list-breakfast" class="row g-3"></div>
+          <div class="tab-pane fade show active" id="pane-breakfast" role="tabpanel" aria-labelledby="tab-breakfast">
+            <div id="accordion-breakfast" class="accordion"></div>
             <div id="empty-breakfast" class="text-center text-muted py-4" style="display:none;">No breakfast recipes yet.</div>
           </div>
-          <div class="tab-pane fade" id="pane-lunch" role="tabpanel">
-            <div id="list-lunch" class="row g-3"></div>
+          <div class="tab-pane fade" id="pane-lunch" role="tabpanel" aria-labelledby="tab-lunch">
+            <div id="accordion-lunch" class="accordion"></div>
             <div id="empty-lunch" class="text-center text-muted py-4" style="display:none;">No lunch recipes yet.</div>
           </div>
-          <div class="tab-pane fade" id="pane-dinner" role="tabpanel">
-            <div id="list-dinner" class="row g-3"></div>
+          <div class="tab-pane fade" id="pane-dinner" role="tabpanel" aria-labelledby="tab-dinner">
+            <div id="accordion-dinner" class="accordion"></div>
             <div id="empty-dinner" class="text-center text-muted py-4" style="display:none;">No dinner recipes yet.</div>
           </div>
-          <div class="tab-pane fade" id="pane-snacks" role="tabpanel">
-            <div id="list-snacks" class="row g-3"></div>
+          <div class="tab-pane fade" id="pane-snacks" role="tabpanel" aria-labelledby="tab-snacks">
+            <div id="accordion-snacks" class="accordion"></div>
             <div id="empty-snacks" class="text-center text-muted py-4" style="display:none;">No snack recipes yet.</div>
           </div>
         </div>
@@ -141,6 +144,7 @@
         <div class="modal-header tip-modal-header d-flex justify-content-between align-items-center">
           <h5 class="modal-title d-flex align-items-center gap-2 mb-0">
             <span id="view-tip-title"></span>
+            <br>
             <span id="view-tip-category" class="badge bg-light text-dark"></span>
           </h5>
           <div class="d-flex align-items-center gap-1">
@@ -171,7 +175,7 @@
   <div class="modal fade" id="addRecipeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
+        <div class="modal-header tip-modal-header">
           <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i><span id="recipeModalTitle">Add Recipe</span></h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
