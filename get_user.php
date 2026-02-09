@@ -15,7 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ . '/db.php';
 
 try {
-    $stmt = $pdo->prepare('SELECT id, firstname, surname, username, created_at, updated_at FROM users WHERE id = :id LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, firstname, surname, username, avatar_url, created_at, updated_at FROM users WHERE id = :id LIMIT 1');
     $stmt->execute([':id' => $_SESSION['user_id']]);
     $user = $stmt->fetch();
 

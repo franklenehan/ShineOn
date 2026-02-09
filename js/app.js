@@ -43,6 +43,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+// Simple helper: check if user is logged in via get_user.php
+async function ensureLoggedInForFocus() {
+    try {
+        const response = await fetch('get_user.php', { method: 'GET' });
+        if (!response.ok) return false;
+
+        const data = await response.json();
+        if (data && data.logged_in) {
+            return true;
+        }
+    } catch (e) {
+        console.warn('Could not check login state for Today\'s Focus:', e);
+    }
+
+    alert('You need to be logged in to record or view your results. Please use the Login button at the top of the page.');
+    return false;
+}
+
 // Index Page Functionality
 async function initIndexPage() {
     console.log('🏠 Index page: Loading components...');
@@ -302,6 +320,30 @@ function initProgressModal() {
         }
     }
 
+    // Check whether there are already saved ratings for today
+    async function hasTodayProgress() {
+        const today = getTodayISO();
+        try {
+            const res = await fetch(`progress-get.php?date=${encodeURIComponent(today)}`);
+            if (!res.ok) return false;
+            const data = await res.json();
+            if (!data || !data.success || !data.ratings) return false;
+
+            const ratings = data.ratings;
+            for (const key in ratings) {
+                if (Object.prototype.hasOwnProperty.call(ratings, key)) {
+                    const val = ratings[key];
+                    if (val !== null && val !== undefined) {
+                        return true;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Error checking today\'s progress:', e);
+        }
+        return false;
+    }
+
     async function saveTodayProgress() {
         const today = getTodayISO();
         const scales = modalEl.querySelectorAll('.rating-scale');
@@ -376,8 +418,17 @@ function initProgressModal() {
     // Initial render of rating buttons
     renderRatingScales();
 
-    // Open modal and load current values
+    // Open modal and load current values (login required)
     openBtn.addEventListener('click', async function () {
+        const ok = await ensureLoggedInForFocus();
+        if (!ok) return;
+
+        const alreadyDone = await hasTodayProgress();
+        if (alreadyDone) {
+            alert('Your wellness stats are already complete for today. Please come back tomorrow to complete them again.');
+            return;
+        }
+
         await loadTodayProgress();
         if (saveStatus) saveStatus.textContent = '';
         modal.show();
@@ -458,7 +509,9 @@ function initDailyReflection() {
 
         try {
             setStatus('Saving...', 'muted');
-            saveReflectionBtn.disabled = true;
+            if (saveReflectionBtn) {
+                saveReflectionBtn.disabled = true;
+            }
 
             const payload = new URLSearchParams();
             payload.append('date', today);
@@ -474,59 +527,54 @@ function initDailyReflection() {
             if (data && data.success) {
                 setStatus('Reflection saved for today.', 'success');
             } else {
-                const message = (data && data.message) || 'Error saving reflection.';
-                setStatus(message, 'error');
+                setStatus((data && data.message) || 'Error saving reflection.', 'error');
             }
         } catch (error) {
             console.error('Error saving reflection:', error);
             setStatus('Error saving reflection.', 'error');
         } finally {
-            saveReflectionBtn.disabled = false;
+            if (saveReflectionBtn) {
+                saveReflectionBtn.disabled = false;
+            }
         }
     }
 
-    // Initial load: today's reflection in editable mode
-    (async () => {
-        viewingPast = false;
-        viewingDate = getTodayISO();
-        reflectionTextarea.readOnly = false;
-        if (datePicker) {
-            datePicker.value = viewingDate;
-        }
-        await loadReflectionForDate(viewingDate);
-        if (!reflectionStatus.textContent) {
-            setStatus('Write your reflection and click Save Reflection. One reflection per day is stored.', 'muted');
-        }
-    })();
+    // Auto-load today's reflection on page load
+    loadReflectionForDate(viewingDate);
 
-    // Manual save button
+    // Save button handler (login required)
     if (saveReflectionBtn) {
-        saveReflectionBtn.addEventListener('click', function () {
-            if (viewingPast && viewingDate !== getTodayISO()) {
-                setStatus('You are viewing a past reflection. Switch back to today to save a new one.', 'error');
+        saveReflectionBtn.addEventListener('click', async function () {
+            const ok = await ensureLoggedInForFocus();
+            if (!ok) return;
+
+            if (viewingPast) {
+                setStatus('You can only edit today\'s reflection. Use the date picker to view past entries.', 'error');
                 return;
             }
+
             saveTodayReflection();
         });
     }
 
-    // Past reflections toggle
+    // Past reflections button toggles the panel (login required)
     if (pastBtn && pastPanel && datePicker) {
-        pastBtn.addEventListener('click', function () {
+        pastBtn.addEventListener('click', async function () {
+            const ok = await ensureLoggedInForFocus();
+            if (!ok) return;
+
             const isHidden = pastPanel.classList.contains('d-none');
-            pastPanel.classList.toggle('d-none', !isHidden);
-            if (!isHidden) {
-                // Hiding panel: return to today in editable mode
-                viewingPast = false;
-                viewingDate = getTodayISO();
-                reflectionTextarea.readOnly = false;
+            if (isHidden) {
+                pastPanel.classList.remove('d-none');
                 datePicker.value = viewingDate;
-                loadReflectionForDate(viewingDate);
+            } else {
+                pastPanel.classList.add('d-none');
             }
         });
 
+        // Date picker change: load selected date and toggle read-only state
         datePicker.addEventListener('change', function () {
-            const selected = datePicker.value;
+            const selected = this.value;
             if (!selected) return;
             viewingDate = selected;
             const isToday = selected === getTodayISO();
@@ -888,12 +936,18 @@ function initTreatmentsPage() {
         });
     }
     
-    // Open modal for adding new treatment
+    // Open modal for adding new treatment (login required)
     if (addTreatmentBtn) {
-        addTreatmentBtn.addEventListener('click', function() {
+        addTreatmentBtn.addEventListener('click', async function() {
+            const ok = await ensureLoggedInForFocus();
+            if (!ok) return;
+
+            if (!treatmentModalInstance) return;
+
             resetForm();
             editingIndex = -1;
             document.getElementById('treatmentModalLabel').innerHTML = '<i class="bi bi-clipboard-plus me-2"></i>Add Treatment';
+            treatmentModalInstance.show();
         });
     }
     
@@ -1184,8 +1238,8 @@ function initTreatmentsPage() {
             console.error('❌ Error loading master supplements:', error);
             masterTableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-danger py-3">
-                        <i class="bi bi-exclamation-triangle me-1"></i>Error loading supplements list
+                    <td colspan="4" class="text-center text-muted py-3">
+                        <i class="bi bi-info-circle me-1"></i>You need to be logged in to view your supplements.
                     </td>
                 </tr>
             `;
@@ -1202,6 +1256,9 @@ function initTreatmentsPage() {
 
     if (masterSaveBtn && masterForm) {
         masterSaveBtn.addEventListener('click', async function () {
+            const ok = await ensureLoggedInForFocus();
+            if (!ok) return;
+
             const masterNameInput = document.getElementById('master-supplement-name');
             const masterDoseInput = document.getElementById('master-supplement-dose');
             const masterNotesInput = document.getElementById('master-supplement-notes');
@@ -1417,9 +1474,15 @@ async function initTrackerPage() {
         if (masterSaveLabel) masterSaveLabel.textContent = 'Add';
     }
 
-    if (masterSaveBtn && masterForm) {
+    if (masterSaveBtn && masterForm && masterTableBody) {
         masterSaveBtn.addEventListener('click', async function () {
-            if (!masterNameInput || !masterDoseInput) return;
+            const ok = await ensureLoggedInForFocus();
+            if (!ok) return;
+
+            if (!masterForm.checkValidity()) {
+                masterForm.classList.add('was-validated');
+                return;
+            }
 
             const name = masterNameInput.value.trim();
             const dosage = masterDoseInput.value.trim();

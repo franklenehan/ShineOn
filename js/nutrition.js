@@ -38,18 +38,26 @@
     if(!tips.length){ empty.style.display = 'block'; return; }
     empty.style.display = 'none';
     const frag = document.createDocumentFragment();
-    tips.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).forEach(t => {
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-      item.setAttribute('data-id', t.id);
-      item.innerHTML = `
-        <div class="me-3 text-start">
-          <div class="fw-semibold">${escapeHtml(t.title)}</div>
-        </div>
-        <span class="badge bg-light text-dark ms-auto">${escapeHtml(t.category||'General')}</span>`;
-      frag.appendChild(item);
-    });
+
+    tips
+      .slice()
+      .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+      .forEach((t, idx) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+        item.setAttribute('data-id', t.id);
+        const indexLabel = idx + 1;
+        item.innerHTML = `
+          <div class="d-flex align-items-center w-100">
+            <div class="me-3 small text-muted" style="width: 2rem;">${indexLabel}</div>
+            <div class="flex-grow-1 text-start">
+              <div class="fw-semibold">${escapeHtml(t.title)}</div>
+            </div>
+            <span class="badge bg-light text-dark ms-2">${escapeHtml(t.category||'General')}</span>
+          </div>`;
+        frag.appendChild(item);
+      });
     list.appendChild(frag);
 
     list.querySelectorAll('.list-group-item-action')
@@ -251,11 +259,22 @@
       const modal = new bootstrap.Modal(document.getElementById('addRecipeModal'));
       modal.show();
     } else if(action==='delete'){
-      if(confirm('Delete this recipe?')){
-        recipes = recipes.filter(x=>x.id!==id);
-        saveRecipes();
-        renderRecipes();
-      }
+      if(!confirm('Delete this recipe?')) return;
+
+      (async () => {
+        try {
+          // Permanently delete from backend (MySQL)
+          await StorageAPI.deleteNutritionRecipe(id);
+
+          // Reload recipes from server so UI matches DB state
+          await loadAll();
+        } catch (err) {
+          console.error('Error deleting nutrition recipe:', err);
+          if (typeof showAlert === 'function') {
+            showAlert('Error deleting recipe', 'danger');
+          }
+        }
+      })();
     }
   }
 

@@ -3,8 +3,8 @@
 ini_set('display_errors', '0');
 header('Content-Type: application/json');
 
-// 🔐 Put your NewsAPI key here (or load from env)
-$apiKey = 'dfab1468d40b4780972dafa5a6c3fb80';
+// 🔐 Load NewsAPI key from environment for security
+$apiKey = getenv('NEWSAPI_KEY') ?: null;
 
 if (!$apiKey) {
     http_response_code(500);

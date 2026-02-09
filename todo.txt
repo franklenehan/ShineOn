@@ -5,15 +5,15 @@ HOMEPAGE
     4. Investigate Reminders to update Stats/Wellness etc
     5. *Add top padding to first card, add some space between header and first card
     6. *Investigate adding newsfeed API to homepage, new positive stories regarding treatments etc
-    7. Secure API Key
+    7. *Secure API Key
 TREATMENTS
     1. *Remove Attachments colomn from table
     2. *Add colour to Edit treatments button background
     3. *Update colour scheme to Edit/Add treatment cards
     4. *Add colour to background of Edit supplements button
 NUTRITION
-    1. Move Tips cards down so it's not covering the header
-    2. On the cards, put BR between title and category
+    1. Move Tips cards down so it's not covering the header ??
+    2. *On the cards, put BR between title and category
     3. *Update colour scheme on Add/Edit Recipes card
     4. *On recipe table add tabs for categories and accordion for recipes
 INVESTIGATIONS
@@ -21,16 +21,16 @@ INVESTIGATIONS
     2. *Test delete button and export to CSV feature
     3. *Add colour to background of Edit investigations button
 FUTURE
-    1. Repair the opacity of the background of the Your Future Plans card
+    1. *Repair the opacity of the background of the Your Future Plans card
     2. Double check all inserts are inserting to database and not locally
     3. Investigate what more can be done with My Visions Card, is it needed, whats it's function#
 ACCOUNT
-    1. Add a Account page
-    2. Add option to change password
-    3. Add option to update profile picture/avatar
+    1. *Add a Account page
+    2. *Add option to change password
+    3. *Add option to update profile picture/avatar
 LOGIN
     1. Update colour scheme in Login card
-    2. Add a legal disclaimer to login, user has to click that they checked on Terms and condiitions before they can create account.
+    2. Add a legal disclaimer to register, user has to click that they checked on Terms and condiitions before they can create account.
 FOOTER
     1. *Full redesign of footer
     2. *Remove local data comments
@@ -38,3 +38,4 @@ FOOTER
     4. *Add contacts details and social media links
 DATABASE
     1. Investigate where to host database so get be able to access it from any device
+    2. Investigate hosting all site on AWS

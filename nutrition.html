@@ -40,6 +40,11 @@
           <i class="bi bi-lightbulb" style="font-size:2rem;"></i>
           <p class="mt-2 mb-0">No tips yet. Click "Add Tip" to get started.</p>
         </div>
+        <div class="tips-header-row d-flex justify-content-between align-items-center mb-2 small">
+          <span class="tips-header-index">#</span>
+          <span class="tips-header-title">Title</span>
+          <span class="tips-header-category">Category</span>
+        </div>
         <div id="tips-list" class="list-group"></div>
       </div>
     </div>
@@ -143,9 +148,8 @@
       <div class="modal-content">
         <div class="modal-header tip-modal-header d-flex justify-content-between align-items-center">
           <h5 class="modal-title d-flex align-items-center gap-2 mb-0">
-            <span id="view-tip-title"></span>
-            <br>
-            <span id="view-tip-category" class="badge bg-light text-dark"></span>
+            <span id="view-tip-category"><br></span>          
+            
           </h5>
           <div class="d-flex align-items-center gap-1">
             <button type="button" class="tip-nav-btn" id="view-tip-prev-btn" aria-label="Previous tip">
@@ -158,6 +162,8 @@
           </div>
         </div>
         <div class="modal-body">
+          <span id="view-tip-title" class="text-dark"></span>
+          <br><br>
           <div id="view-tip-details" class="small"></div>
         </div>
         <div class="modal-footer d-flex justify-content-end">

@@ -164,6 +164,9 @@ async function initCurrentUserState() {
     const navUserLabel = document.getElementById('navUserLabel');
     const navLoginButton = document.getElementById('navLoginButton');
     const navLogoutButton = document.getElementById('navLogoutButton');
+    const navAccountButton = document.getElementById('navAccountButton');
+    const navUserAvatar = document.getElementById('navUserAvatar');
+    const navUserIcon = document.getElementById('navUserIcon');
 
     if (!navUserLabel || !navLoginButton) {
         return;
@@ -177,11 +180,18 @@ async function initCurrentUserState() {
 
         const data = await response.json();
 
-        // Expected structure: { logged_in: true, user: { firstname: 'Frank', ... } }
+        // Expected structure: { logged_in: true, user: { firstname: 'Frank', avatar_url?: '...' } }
         if (data && data.logged_in && data.user) {
             const user = data.user;
             const firstName = user.firstname || 'User';
             navUserLabel.textContent = `Hi ${firstName}`;
+
+            // If an avatar URL is available, show it and hide the default icon
+            if (user.avatar_url && navUserAvatar && navUserIcon) {
+                navUserAvatar.src = user.avatar_url;
+                navUserAvatar.classList.remove('d-none');
+                navUserIcon.classList.add('d-none');
+            }
 
             // Switch button from opening the modal to acting as a dropdown toggle
             navLoginButton.removeAttribute('data-bs-target');
@@ -210,6 +220,13 @@ async function initCurrentUserState() {
                     } finally {
                         window.location.reload();
                     }
+                });
+            }
+
+            // Wire up Account button to navigate to the account page
+            if (navAccountButton) {
+                navAccountButton.addEventListener('click', function () {
+                    window.location.href = 'account.html';
                 });
             }
         }

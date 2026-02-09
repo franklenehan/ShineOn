@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShineOn - Account</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Component -->
+    <div id="header-placeholder"></div>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1>My Account</h1>
+                <p class="lead text-muted">Manage your login details and profile picture.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Profile summary & avatar -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-circle me-2"></i>Your Profile
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <img id="account-avatar-preview" src="" alt="Profile picture" class="account-avatar-preview d-none mb-3">
+                        </div>
+                        <p class="mb-1"><strong>Name:</strong> <span id="account-name">&mdash;</span></p>
+                        <p class="mb-1"><strong>Username:</strong> <span id="account-username">&mdash;</span></p>
+                        <p class="text-muted small mb-0">Details shown here come from your ShineOn account.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change password -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-key-fill me-2"></i>Change Password
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="password-alert" class="alert d-none" role="alert"></div>
+                        <form id="change-password-form" novalidate>
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current password</label>
+                                <input type="password" class="form-control" id="currentPassword" name="current_password" autocomplete="current-password" required>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="showCurrentPassword">
+                                    <label class="form-check-label" for="showCurrentPassword">
+                                        Show current password
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New password</label>
+                                <input type="password" class="form-control" id="newPassword" name="new_password" autocomplete="new-password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm new password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" autocomplete="new-password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" id="change-password-submit">
+                                <i class="bi bi-save me-1"></i>Update Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload avatar -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image-fill me-2"></i>Profile Picture
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="avatar-alert" class="alert d-none" role="alert"></div>
+                        <form id="avatar-upload-form" enctype="multipart/form-data" novalidate>
+                            <div class="mb-3">
+                                <label for="avatarFile" class="form-label">Choose a photo</label>
+                                <input type="file" class="form-control" id="avatarFile" name="avatar" accept="image/*" required>
+                                <div class="form-text">For best results, use a clear head-and-shoulders photo.</div>
+                            </div>
+                            <button type="submit" class="btn btn-secondary w-100" id="avatar-upload-submit">
+                                <i class="bi bi-upload me-1"></i>Upload Picture
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Component -->
+    <div id="footer-placeholder"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/account.js"></script>
+</body>
+</html>

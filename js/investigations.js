@@ -18,17 +18,87 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!document.getElementById('research-table')) {
         return;
     }
-    
+
     console.log('🔬 Initializing Investigations page...');
-    
+
+    const addResearchBtn = document.getElementById('add-research-btn');
+
+    // Helper: when not logged in, show login-required state and gate Add Research button
+    function showLoggedOutState() {
+        const tbody = document.getElementById('research-table-body');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <i class="bi bi-info-circle" style="font-size: 3rem;"></i>
+                        <p class="mt-3 mb-0">You need to be logged in to view and manage your investigations.</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Reset stats
+        const totalEl = document.getElementById('total-research-count');
+        const highPriorityEl = document.getElementById('high-priority-count');
+        const reviewedEl = document.getElementById('reviewed-count');
+        const categoriesEl = document.getElementById('categories-count');
+        const showingEl = document.getElementById('showing-count');
+        const totalCountEl = document.getElementById('total-count');
+        const exportBtn = document.getElementById('export-research-btn');
+
+        if (totalEl) totalEl.textContent = '0';
+        if (highPriorityEl) highPriorityEl.textContent = '0';
+        if (reviewedEl) reviewedEl.textContent = '0';
+        if (categoriesEl) categoriesEl.textContent = '0';
+        if (showingEl) showingEl.textContent = '0';
+        if (totalCountEl) totalCountEl.textContent = '0';
+        if (exportBtn) exportBtn.classList.add('d-none');
+
+        if (addResearchBtn) {
+            addResearchBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                alert('You need to be logged in to add research investigations. Please use the Login button at the top of the page.');
+            });
+        }
+    }
+
+    // Check login state via get_user.php
+    let loggedIn = false;
+    try {
+        const response = await fetch('get_user.php', { method: 'GET' });
+        if (response.ok) {
+            const data = await response.json();
+            loggedIn = !!(data && data.logged_in);
+        }
+    } catch (e) {
+        console.warn('Could not check login state for investigations:', e);
+    }
+
+    if (!loggedIn) {
+        console.log('🔒 User not logged in: showing login-required state for Investigations');
+        showLoggedOutState();
+        return;
+    }
+
     // Wait for StorageAPI
     if (typeof StorageAPI === 'undefined') {
         console.error('❌ StorageAPI not available');
         return;
     }
-    
+
+    // When logged in, wire Add Research button to open the modal via JS
+    if (addResearchBtn) {
+        addResearchBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const modalEl = document.getElementById('addResearchModal');
+            if (!modalEl || typeof bootstrap === 'undefined' || !bootstrap.Modal) return;
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        });
+    }
+
     await initInvestigationsPage();
-    
+
     console.log('✅ Investigations page initialized');
 });
 
