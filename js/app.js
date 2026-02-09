@@ -816,6 +816,7 @@ function initTreatmentsPage() {
     const treatmentModal = document.getElementById('treatmentModal');
     const deleteConfirmModal = document.getElementById('deleteConfirmModal');
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const deleteTreatmentBtn = document.getElementById('delete-treatment-btn');
     const exportBtn = document.getElementById('export-treatments-btn');
     const addTreatmentBtn = document.getElementById('add-treatment-btn');
 
@@ -869,7 +870,7 @@ function initTreatmentsPage() {
         if (treatments.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-5">
+                    <td colspan="4" class="text-center text-muted py-5">
                         <i class="bi bi-clipboard-plus" style="font-size: 3rem;"></i>
                         <p class="mt-2">No treatments recorded yet. Click "Add Treatment" to get started.</p>
                     </td>
@@ -884,9 +885,9 @@ function initTreatmentsPage() {
         let html = '';
         sortedTreatments.forEach((treatment) => {
             const id = treatment.id;
-            
+
             html += `
-                <tr>
+                <tr class="treatment-row" data-id="${id}">
                     <td>${formatDate(treatment.date)}</td>
                     <td>
                         <span class="badge bg-primary">${treatment.type}</span>
@@ -897,45 +898,24 @@ function initTreatmentsPage() {
                             ${treatment.notes ? truncateText(treatment.notes, 100) : '<span class="text-muted">No notes</span>'}
                         </div>
                     </td>
-                    <td class="text-center">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button class="btn btn-outline-primary edit-treatment" data-id="${id}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-danger delete-treatment" data-id="${id}" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
                 </tr>
             `;
         });
-        
+
         tbody.innerHTML = html;
-        
-        // Attach event listeners
-        attachTableEventListeners();
-    }
-    
-    // Attach event listeners to table buttons
-    function attachTableEventListeners() {
-        // Edit buttons
-        document.querySelectorAll('.edit-treatment').forEach(button => {
-            button.addEventListener('click', function() {
+
+        // Make each row clickable to open the edit modal
+        tbody.querySelectorAll('tr.treatment-row').forEach(row => {
+            row.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
+                if (!id) return;
                 openEditModal(id);
             });
         });
-        
-        // Delete buttons
-        document.querySelectorAll('.delete-treatment').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                openDeleteModal(id);
-            });
-        });
     }
     
+    // (Row click handlers are attached in loadTreatmentsTable)
+
     // Open modal for adding new treatment (login required)
     if (addTreatmentBtn) {
         addTreatmentBtn.addEventListener('click', async function() {
@@ -946,6 +926,9 @@ function initTreatmentsPage() {
 
             resetForm();
             editingIndex = -1;
+            if (deleteTreatmentBtn) {
+                deleteTreatmentBtn.classList.add('d-none');
+            }
             document.getElementById('treatmentModalLabel').innerHTML = '<i class="bi bi-clipboard-plus me-2"></i>Add Treatment';
             treatmentModalInstance.show();
         });
@@ -973,6 +956,11 @@ function initTreatmentsPage() {
 
             // Update modal title
             document.getElementById('treatmentModalLabel').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Treatment';
+
+            // When editing, show the Delete button in the modal
+            if (deleteTreatmentBtn) {
+                deleteTreatmentBtn.classList.remove('d-none');
+            }
 
             // Show modal
             treatmentModalInstance.show();
@@ -1053,7 +1041,15 @@ function initTreatmentsPage() {
         deleteIndex = id;
         deleteModalInstance.show();
     }
-    
+
+    // Delete button inside treatment modal triggers confirmation modal
+    if (deleteTreatmentBtn) {
+        deleteTreatmentBtn.addEventListener('click', function() {
+            if (!editingIndex) return;
+            openDeleteModal(editingIndex);
+        });
+    }
+
     // Confirm delete
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', function() {

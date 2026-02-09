@@ -40,12 +40,21 @@
           <i class="bi bi-lightbulb" style="font-size:2rem;"></i>
           <p class="mt-2 mb-0">No tips yet. Click "Add Tip" to get started.</p>
         </div>
-        <div class="tips-header-row d-flex justify-content-between align-items-center mb-2 small">
-          <span class="tips-header-index">#</span>
-          <span class="tips-header-title">Title</span>
-          <span class="tips-header-category">Category</span>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped mb-0" id="nutrition-tips-table">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" style="width: 10%;">#</th>
+                <th scope="col" style="width: 60%;">Title</th>
+                <th scope="col" style="width: 30%;">Category</th>
+              </tr>
+            </thead>
+            <tbody id="nutrition-tips-body">
+              <!-- Tips will be rendered here by nutrition.js -->
+            </tbody>
+          </table>
         </div>
-        <div id="tips-list" class="list-group"></div>
       </div>
     </div>
 

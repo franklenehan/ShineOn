@@ -31,37 +31,54 @@
   function uid(){ return Date.now() + Math.floor(Math.random()*1000); }
 
   function renderTips(){
-    const list = document.getElementById('tips-list');
+    const tbody = document.getElementById('nutrition-tips-body');
     const empty = document.getElementById('tips-empty');
-    if(!list || !empty) return;
-    list.innerHTML = '';
-    if(!tips.length){ empty.style.display = 'block'; return; }
+    if(!tbody || !empty) return;
+
+    tbody.innerHTML = '';
+
+    if(!tips.length){
+      empty.style.display = 'block';
+      return;
+    }
+
     empty.style.display = 'none';
+
     const frag = document.createDocumentFragment();
 
     tips
       .slice()
       .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
       .forEach((t, idx) => {
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-        item.setAttribute('data-id', t.id);
-        const indexLabel = idx + 1;
-        item.innerHTML = `
-          <div class="d-flex align-items-center w-100">
-            <div class="me-3 small text-muted" style="width: 2rem;">${indexLabel}</div>
-            <div class="flex-grow-1 text-start">
-              <div class="fw-semibold">${escapeHtml(t.title)}</div>
-            </div>
-            <span class="badge bg-light text-dark ms-2">${escapeHtml(t.category||'General')}</span>
-          </div>`;
-        frag.appendChild(item);
-      });
-    list.appendChild(frag);
+        const tr = document.createElement('tr');
+        tr.dataset.id = t.id;
+        tr.classList.add('tip-row');
 
-    list.querySelectorAll('.list-group-item-action')
-      .forEach(btn => btn.addEventListener('click', onTipListItemClick));
+        const indexLabel = idx + 1;
+
+        tr.innerHTML = `
+          <td style="width: 10%;">${indexLabel}</td>
+          <td style="width: 60%;">
+            <strong>${escapeHtml(t.title)}</strong>
+          </td>
+          <td style="width: 30%;">
+            <span class="badge bg-light text-dark">${escapeHtml(t.category||'General')}</span>
+          </td>
+        `;
+
+        frag.appendChild(tr);
+      });
+
+    tbody.appendChild(frag);
+
+    // Make each row clickable to view tip details
+    tbody.querySelectorAll('tr.tip-row').forEach(row => {
+      row.addEventListener('click', function(){
+        const id = this.dataset.id;
+        if(id == null) return;
+        openTipView(id);
+      });
+    });
   }
 
   function onTipListItemClick(e){
