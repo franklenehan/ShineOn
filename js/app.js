@@ -1871,10 +1871,46 @@ function initFuturePage() {
     const planNotesInput = document.getElementById('plan-notes-input');
     const addPlanBtn = document.getElementById('add-plan-btn');
     const recoveryPlansList = document.getElementById('recovery-plans-list');
-    
+
+    // Local storage key for future data; will be made per-user once we know the logged-in ShineOn user id
+    let futureStorageKey = 'futureData';
+
+    // When not logged in, show a gentle message instead of shared data
+    function showFutureLoggedOutState() {
+        if (visionNotes) {
+            visionNotes.value = '';
+            visionNotes.disabled = true;
+        }
+        if (saveVisionBtn) {
+            saveVisionBtn.disabled = true;
+        }
+        if (visionSaveStatus) {
+            visionSaveStatus.textContent = 'Please log in to save your vision and future plans.';
+            visionSaveStatus.className = 'text-muted';
+        }
+        if (goalsList) {
+            goalsList.innerHTML = '<p class="text-muted text-center py-3">You need to be logged in to view and manage your life goals.</p>';
+        }
+        if (recoveryPlansList) {
+            recoveryPlansList.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-info-circle" style="font-size: 2.5rem;"></i>
+                    <p class="mt-2">You need to be logged in to view and manage your post-recovery plans.</p>
+                </div>
+            `;
+        }
+        if (newGoalInput) newGoalInput.disabled = true;
+        if (addGoalBtn) addGoalBtn.disabled = true;
+        if (planTitleInput) planTitleInput.disabled = true;
+        if (planCategoryInput) planCategoryInput.disabled = true;
+        if (planPriorityInput) planPriorityInput.disabled = true;
+        if (planNotesInput) planNotesInput.disabled = true;
+        if (addPlanBtn) addPlanBtn.disabled = true;
+    }
+
     // Load vision notes
     function loadVisionNotes() {
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         if (visionNotes && futureData.visionNotes) {
             visionNotes.value = futureData.visionNotes;
         }
@@ -1910,14 +1946,14 @@ function initFuturePage() {
     }
     
     function saveVisionNotes() {
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         futureData.visionNotes = visionNotes.value;
-        Storage.save('futureData', futureData);
+        Storage.save(futureStorageKey, futureData);
     }
     
     // Load and display life goals
     function loadGoals() {
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         const goals = futureData.lifeGoals || [];
         
         if (goals.length === 0) {
@@ -1986,7 +2022,7 @@ function initFuturePage() {
         const text = newGoalInput.value.trim();
         if (!text) return;
         
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         if (!futureData.lifeGoals) futureData.lifeGoals = [];
         
         futureData.lifeGoals.push({
@@ -1995,7 +2031,7 @@ function initFuturePage() {
             createdAt: new Date().toISOString()
         });
         
-        Storage.save('futureData', futureData);
+        Storage.save(futureStorageKey, futureData);
         newGoalInput.value = '';
         loadGoals();
         showAlert('Goal added!', 'success');
@@ -2003,7 +2039,7 @@ function initFuturePage() {
     
     // Toggle goal completion
     function toggleGoalCompletion(index) {
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         if (!futureData.lifeGoals || !futureData.lifeGoals[index]) return;
         
         futureData.lifeGoals[index].completed = !futureData.lifeGoals[index].completed;
@@ -2014,7 +2050,7 @@ function initFuturePage() {
             delete futureData.lifeGoals[index].completedAt;
         }
         
-        Storage.save('futureData', futureData);
+        Storage.save(futureStorageKey, futureData);
         loadGoals();
     }
     
@@ -2022,18 +2058,18 @@ function initFuturePage() {
     function deleteGoal(index) {
         if (!confirm('Are you sure you want to delete this goal?')) return;
         
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         if (!futureData.lifeGoals) return;
         
         futureData.lifeGoals.splice(index, 1);
-        Storage.save('futureData', futureData);
+        Storage.save(futureStorageKey, futureData);
         loadGoals();
         showAlert('Goal deleted.', 'info');
     }
     
     // Load and display recovery plans
     function loadRecoveryPlans() {
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         const plans = futureData.recoveryPlans || [];
         
         updatePlanStats(plans);
@@ -2117,7 +2153,7 @@ function initFuturePage() {
                 return;
             }
             
-            const futureData = Storage.load('futureData') || {};
+            const futureData = Storage.load(futureStorageKey) || {};
             if (!futureData.recoveryPlans) futureData.recoveryPlans = [];
             
             futureData.recoveryPlans.push({
@@ -2129,7 +2165,7 @@ function initFuturePage() {
                 createdAt: new Date().toISOString()
             });
             
-            Storage.save('futureData', futureData);
+            Storage.save(futureStorageKey, futureData);
             
             // Clear form
             planTitleInput.value = '';
@@ -2144,7 +2180,7 @@ function initFuturePage() {
     
     // Toggle plan completion
     function togglePlanCompletion(index) {
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         if (!futureData.recoveryPlans || !futureData.recoveryPlans[index]) return;
         
         futureData.recoveryPlans[index].completed = !futureData.recoveryPlans[index].completed;
@@ -2156,7 +2192,7 @@ function initFuturePage() {
             delete futureData.recoveryPlans[index].completedAt;
         }
         
-        Storage.save('futureData', futureData);
+        Storage.save(futureStorageKey, futureData);
         loadRecoveryPlans();
     }
     
@@ -2164,11 +2200,11 @@ function initFuturePage() {
     function deletePlan(index) {
         if (!confirm('Are you sure you want to delete this plan?')) return;
         
-        const futureData = Storage.load('futureData') || {};
+        const futureData = Storage.load(futureStorageKey) || {};
         if (!futureData.recoveryPlans) return;
         
         futureData.recoveryPlans.splice(index, 1);
-        Storage.save('futureData', futureData);
+        Storage.save(futureStorageKey, futureData);
         loadRecoveryPlans();
         showAlert('Plan deleted.', 'info');
     }
@@ -2200,10 +2236,50 @@ function initFuturePage() {
         });
     }
     
-    // Initial load
-    loadVisionNotes();
-    loadGoals();
-    loadRecoveryPlans();
+    // Initial load is gated by login state so that future data is user-specific
+    (async function initFutureForUser() {
+        let loggedIn = false;
+        try {
+            const response = await fetch('get_user.php', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                loggedIn = !!(data && data.logged_in);
+
+                if (loggedIn && data.user && (data.user.id !== undefined && data.user.id !== null)) {
+                    // Scope future data to this ShineOn user so different accounts do not see each other's plans
+                    const userId = data.user.id;
+                    futureStorageKey = `futureData_user_${userId}`;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not check login state for Future page:', e);
+        }
+
+        if (!loggedIn) {
+            showFutureLoggedOutState();
+            return;
+        }
+
+        // One-time migration: if the per-user key is empty, attempt to copy any legacy shared data from 'futureData'
+        try {
+            const existing = (typeof Storage !== 'undefined') ? (Storage.load(futureStorageKey) || {}) : {};
+            const hasExisting = existing && Object.keys(existing).length > 0;
+            if (!hasExisting && typeof Storage !== 'undefined') {
+                const legacy = Storage.load('futureData') || {};
+                const hasLegacy = legacy && Object.keys(legacy).length > 0;
+                if (hasLegacy) {
+                    console.log('🔁 Migrating legacy futureData into per-user key', futureStorageKey);
+                    Storage.save(futureStorageKey, legacy);
+                }
+            }
+        } catch (migrationError) {
+            console.warn('⚠️ Legacy futureData migration skipped due to error:', migrationError);
+        }
+
+        loadVisionNotes();
+        loadGoals();
+        loadRecoveryPlans();
+    })();
 }
 
 // Utility Functions

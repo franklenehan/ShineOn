@@ -30,6 +30,24 @@
 
   function uid(){ return Date.now() + Math.floor(Math.random()*1000); }
 
+  let tipsCollapsed = true; // tips table body is hidden by default
+
+  function applyTipsCollapsedState(){
+    const tbody = document.getElementById('nutrition-tips-body');
+    const toggleBtn = document.getElementById('toggle-tips-rows');
+    if(!tbody || !toggleBtn) return;
+
+    if(tipsCollapsed){
+      tbody.classList.add('d-none');
+      toggleBtn.setAttribute('aria-expanded','false');
+      toggleBtn.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Show Tips';
+    } else {
+      tbody.classList.remove('d-none');
+      toggleBtn.setAttribute('aria-expanded','true');
+      toggleBtn.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Hide Tips';
+    }
+  }
+
   function renderTips(){
     const tbody = document.getElementById('nutrition-tips-body');
     const empty = document.getElementById('tips-empty');
@@ -79,6 +97,9 @@
         openTipView(id);
       });
     });
+
+    // Ensure collapsed/expanded state is applied after rendering rows
+    applyTipsCollapsedState();
   }
 
   function onTipListItemClick(e){
@@ -414,6 +435,14 @@
 
     const exportBtn = document.getElementById('export-recipes-btn');
     if(exportBtn){ exportBtn.addEventListener('click', exportRecipesCsv); }
+
+    const toggleTipsBtn = document.getElementById('toggle-tips-rows');
+    if(toggleTipsBtn){
+      toggleTipsBtn.addEventListener('click', function(){
+        tipsCollapsed = !tipsCollapsed;
+        applyTipsCollapsedState();
+      });
+    }
 
     const tipModal = document.getElementById('addTipModal');
     if(tipModal){ tipModal.addEventListener('hidden.bs.modal', function(){

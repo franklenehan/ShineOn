@@ -12,6 +12,8 @@ let allResearch = [];
 let filteredResearch = [];
 let selectedResearchIds = new Set();
 let currentEditId = null;
+// Storage key is made user-specific once we know the logged-in user id
+let researchStorageKey = 'research';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Only initialize if on investigations page
@@ -64,11 +66,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Check login state via get_user.php
     let loggedIn = false;
+    let currentUserId = null;
     try {
         const response = await fetch('get_user.php', { method: 'GET' });
         if (response.ok) {
             const data = await response.json();
             loggedIn = !!(data && data.logged_in);
+
+            if (loggedIn && data.user && (data.user.id !== undefined && data.user.id !== null)) {
+                // Use a per-user storage key so investigations are scoped to the logged-in ShineOn user
+                currentUserId = data.user.id;
+                researchStorageKey = `research_user_${currentUserId}`;
+            }
         }
     } catch (e) {
         console.warn('Could not check login state for investigations:', e);
@@ -120,14 +129,14 @@ async function initInvestigationsPage() {
 }
 
 /**
- * Load research from storage
+ * Load research from storage (per logged-in user)
  */
 async function loadResearch() {
     console.log('📥 Loading research data...');
     
     try {
-        // Get research from storage (using metadata store)
-        const stored = await StorageAPI.getMetadata('research');
+        // Get research from storage (using metadata store) for the current user
+        let stored = await StorageAPI.getMetadata(researchStorageKey);
         // Metadata may be returned as a JSON string or already-parsed value
         let parsed = stored;
         if (typeof stored === 'string') {
@@ -136,6 +145,30 @@ async function loadResearch() {
             } catch (e) {
                 console.error('❌ Failed to parse research metadata JSON, defaulting to []:', e);
                 parsed = [];
+            }
+        }
+
+        // If the per-user key is empty, attempt a one-time migration from the legacy shared key 'research'
+        if ((!parsed || (Array.isArray(parsed) && parsed.length === 0))) {
+            try {
+                const legacy = await StorageAPI.getMetadata('research');
+                let legacyParsed = legacy;
+                if (typeof legacy === 'string') {
+                    try {
+                        legacyParsed = JSON.parse(legacy);
+                    } catch (e) {
+                        console.error('❌ Failed to parse legacy research JSON:', e);
+                        legacyParsed = [];
+                    }
+                }
+                if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
+                    console.log(`🔁 Migrating ${legacyParsed.length} legacy research entries to per-user key ${researchStorageKey}`);
+                    parsed = legacyParsed;
+                    // Save immediately under the new per-user key so future loads use it
+                    await StorageAPI.saveMetadata(researchStorageKey, parsed);
+                }
+            } catch (migrationError) {
+                console.warn('⚠️ Legacy research migration skipped due to error:', migrationError);
             }
         }
 
@@ -151,13 +184,14 @@ async function loadResearch() {
 }
 
 /**
- * Save research to storage
+ * Save research to storage (per logged-in user)
  */
 async function saveResearch() {
     console.log('💾 Saving research data...');
     
     try {
-        await StorageAPI.saveMetadata('research', allResearch);
+        // Persist research for this specific user key only
+        await StorageAPI.saveMetadata(researchStorageKey, allResearch);
         console.log('✅ Research data saved');
     } catch (error) {
         console.error('❌ Error saving research:', error);

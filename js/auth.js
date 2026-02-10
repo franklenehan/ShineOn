@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function waitForHeaderAndInitAuth() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
+    const registerTermsLink = document.getElementById('registerTermsLink');
+    const registerLegalLink = document.getElementById('registerLegalLink');
 
     if (!loginForm || !registerForm) {
         // Header may not be loaded yet (components.js loads it asynchronously)
@@ -22,12 +24,46 @@ function waitForHeaderAndInitAuth() {
     console.log('🔐 Auth initializing...');
     initLoginForm(loginForm);
     initRegisterForm(registerForm);
+
+    // When terms/legal are opened from inside the registration tab, return to login modal afterwards
+    const loginModalEl = document.getElementById('loginModal');
+    const termsModalEl = document.getElementById('termsModal');
+    const legalModalEl = document.getElementById('legalModal');
+    let returnToLoginAfterPolicy = false;
+
+    function wirePolicyLink(linkEl, targetModalEl) {
+        if (!linkEl || !targetModalEl || !loginModalEl || !window.bootstrap || !bootstrap.Modal) return;
+
+        linkEl.addEventListener('click', function (e) {
+            e.preventDefault();
+            returnToLoginAfterPolicy = true;
+
+            const loginInstance = bootstrap.Modal.getOrCreateInstance(loginModalEl);
+            loginInstance.hide();
+
+            const targetInstance = bootstrap.Modal.getOrCreateInstance(targetModalEl);
+            targetInstance.show();
+        });
+
+        targetModalEl.addEventListener('hidden.bs.modal', function () {
+            if (!returnToLoginAfterPolicy) return;
+            returnToLoginAfterPolicy = false;
+
+            const loginInstance = bootstrap.Modal.getOrCreateInstance(loginModalEl);
+            loginInstance.show();
+        });
+    }
+
+    wirePolicyLink(registerTermsLink, termsModalEl);
+    wirePolicyLink(registerLegalLink, legalModalEl);
+
     initCurrentUserState();
 }
 
 function initRegisterForm(registerForm) {
     const loginError = document.getElementById('loginError');
     const registerSubmitButton = document.getElementById('registerSubmitButton');
+    const registerAgreeCheckbox = document.getElementById('registerAgree');
 
     if (!registerForm) return;
 
@@ -37,6 +73,15 @@ function initRegisterForm(registerForm) {
         if (loginError) {
             loginError.classList.add('d-none');
             loginError.textContent = '';
+        }
+
+        // Require agreement to Terms & Conditions and Legal Disclaimer
+        if (registerAgreeCheckbox && !registerAgreeCheckbox.checked) {
+            if (loginError) {
+                loginError.textContent = 'You must agree to the Terms and Conditions and Legal Disclaimer before creating an account.';
+                loginError.classList.remove('d-none');
+            }
+            return;
         }
 
         if (registerSubmitButton) {
@@ -167,6 +212,7 @@ async function initCurrentUserState() {
     const navAccountButton = document.getElementById('navAccountButton');
     const navUserAvatar = document.getElementById('navUserAvatar');
     const navUserIcon = document.getElementById('navUserIcon');
+    const navUserDropdown = document.getElementById('navUserDropdown');
 
     if (!navUserLabel || !navLoginButton) {
         return;
@@ -206,6 +252,17 @@ async function initCurrentUserState() {
                     const isShown = navUserMenu.classList.contains('show');
                     navUserMenu.classList.toggle('show', !isShown);
                     navLoginButton.setAttribute('aria-expanded', String(!isShown));
+                });
+
+                // Hide the dropdown when clicking anywhere outside the user dropdown
+                document.addEventListener('click', function (event) {
+                    if (!navUserMenu.classList.contains('show')) return;
+                    // If click is inside the dropdown toggle or menu, do nothing
+                    if (navUserDropdown && navUserDropdown.contains(event.target)) {
+                        return;
+                    }
+                    navUserMenu.classList.remove('show');
+                    navLoginButton.setAttribute('aria-expanded', 'false');
                 });
             }
 
