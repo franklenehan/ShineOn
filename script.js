@@ -13,6 +13,12 @@ fetch("api/positive_cancer_news.php")
       return;
     }
 
+    // If there are no positive-filtered articles, show a helpful message
+    if (data.length === 0) {
+      container.innerHTML = '<p class="text-muted mb-0">No uplifting news stories are available right now. Please check back later.</p>';
+      return;
+    }
+
     data.forEach(article => {
       const div = document.createElement("div");
       div.className = "news-card";

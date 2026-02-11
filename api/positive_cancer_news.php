@@ -3,8 +3,19 @@
 ini_set('display_errors', '0');
 header('Content-Type: application/json');
 
-// 🔐 Load NewsAPI key from environment for security
+// 🔐 Load NewsAPI key from environment for security, with optional local config fallback
 $apiKey = getenv('NEWSAPI_KEY') ?: null;
+
+// Optional local config file (not committed) can define $NEWSAPI_KEY
+if (!$apiKey) {
+    $localConfig = __DIR__ . '/config-local.php';
+    if (is_readable($localConfig)) {
+        require $localConfig; // should define $NEWSAPI_KEY
+        if (!empty($NEWSAPI_KEY)) {
+            $apiKey = $NEWSAPI_KEY;
+        }
+    }
+}
 
 if (!$apiKey) {
     http_response_code(500);

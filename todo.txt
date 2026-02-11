@@ -36,6 +36,7 @@ FOOTER
     2. *Remove local data comments
     3. *Add medical disclaimer
     4. *Add contacts details and social media links
+    5. *Add policy to the footer
 DATABASE
     1. Investigate where to host database so get be able to access it from any device
     2. Investigate hosting all site on AWS
