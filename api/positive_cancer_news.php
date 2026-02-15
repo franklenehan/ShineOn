@@ -24,8 +24,20 @@ if (!$apiKey) {
 }
 
 // Build query
-$query = '(cancer AND (survivor OR remission OR "successful treatment" OR breakthrough OR recovery))';
-$url = 'https://newsapi.org/v2/everything?q=' . urlencode($query) . '&language=en&sortBy=publishedAt&pageSize=20&apiKey=' . urlencode($apiKey);
+// Focus on cancer-related, uplifting content: survivors, remission, successful treatments,
+// breakthrough research and clinical/drug trials with positive outcomes.
+$query = 'cancer AND (survivor OR remission OR "successful treatment" OR breakthrough OR "clinical trial" OR "drug trial" OR immunotherapy OR "positive results" OR "no evidence of disease")';
+
+// Lightly de-emphasise obviously negative headlines by excluding some harsh terms
+$query .= ' NOT death NOT died NOT fatal NOT killing NOT killed NOT lawsuit';
+
+// Limit to articles from the last 7 days
+$fromDate = date('Y-m-d', strtotime('-7 days'));
+
+// We ask NewsAPI for up to 20 recent matches, then further trim to 3 positive ones below.
+$url = 'https://newsapi.org/v2/everything?q=' . urlencode($query)
+     . '&language=en&sortBy=publishedAt&pageSize=20&from=' . urlencode($fromDate)
+     . '&apiKey=' . urlencode($apiKey);
 
 // Helper to fetch URL using cURL with safe fallback
 function fetch_url(string $url): array
@@ -96,7 +108,9 @@ if (!is_array($data) || !isset($data['articles']) || !is_array($data['articles']
     exit;
 }
 
-// Positive keyword filter
+// Positive keyword filter (applied to title + description)
+// These terms are chosen to favour survivor stories, remission, successful treatments,
+// and promising research / clinical trials while still being fairly broad.
 $positiveKeywords = [
     'survivor',
     'remission',
@@ -106,6 +120,22 @@ $positiveKeywords = [
     'cured',
     'successful',
     'thriving',
+    'clinical trial',
+    'drug trial',
+    'phase 2',
+    'phase ii',
+    'phase 3',
+    'phase iii',
+    'positive results',
+    'promising results',
+    'promising data',
+    'no evidence of disease',
+    'ned',
+    'long-term survival',
+    'survival rate',
+    'immunotherapy',
+    'approved',
+    'approval',
 ];
 
 $filteredArticles = [];
@@ -119,5 +149,7 @@ foreach ($data['articles'] as $article) {
         }
     }
 }
+// Return at most 3 positively filtered articles for the homepage newsfeed
+$limited = array_slice($filteredArticles, 0, 3);
 
-echo json_encode($filteredArticles);
+echo json_encode($limited);
