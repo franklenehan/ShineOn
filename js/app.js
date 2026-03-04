@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('❌ StorageAPI initialization failed:', error);
     }
-    
+
     // Initialize page-specific functionality based on current page
     const path = window.location.pathname;
     const page = path.split('/').pop() || 'index.html';
@@ -71,6 +71,9 @@ async function initIndexPage() {
     // Initialize wellbeing progress modal
     initProgressModal();
 
+    // Initialize Recent Focus modal/table (Phase 1)
+    initRecentFocus();
+
     // Update quick stats (still using StorageAPI for now)
     await updateQuickStats();
 
@@ -78,6 +81,118 @@ async function initIndexPage() {
     await initWeeklyStatsChart();
     
     console.log('✅ Index page initialized');
+}
+
+// Recent Focus modal (Phase 1: show recent reflections + overall wellbeing)
+function initRecentFocus() {
+    const btn = document.getElementById('recent-focus-btn');
+    const modalEl = document.getElementById('recentFocusModal');
+    const tbody = document.getElementById('recent-focus-body');
+
+    if (!btn || !modalEl || !tbody || !window.bootstrap || !bootstrap.Modal) {
+        return; // Not on this page or Bootstrap not available
+    }
+
+    const modal = new bootstrap.Modal(modalEl);
+
+    function setLoadingState() {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center text-muted py-3">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Loading recent focus...
+                </td>
+            </tr>
+        `;
+    }
+
+    function setEmptyState() {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center text-muted py-3">
+                    No recent reflections found yet. Start by saving today\'s reflection.
+                </td>
+            </tr>
+        `;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text == null ? '' : String(text);
+        return div.innerHTML;
+    }
+
+    function formatDateShort(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T00:00:00');
+        if (Number.isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function renderRows(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+            setEmptyState();
+            return;
+        }
+
+        let html = '';
+        items.forEach(item => {
+            const dateLabel = formatDateShort(item.date);
+            const score = item.overall_wellbeing;
+            const snippetSource = (item.content || '').trim();
+            let snippet = snippetSource;
+            const maxLen = 120;
+            if (snippet.length > maxLen) {
+                snippet = snippet.slice(0, maxLen - 1) + '…';
+            }
+
+            const scoreLabel = (score != null && score >= 1 && score <= 5)
+                ? `${score} / 5`
+                : '<span class="text-muted">—</span>';
+
+            html += `
+                <tr>
+                    <td>${escapeHtml(dateLabel)}</td>
+                    <td>${scoreLabel}</td>
+                    <td>${escapeHtml(snippet)}</td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    async function loadRecentFocus() {
+        setLoadingState();
+        try {
+            const res = await fetch('reflections-recent.php?limit=14');
+            if (!res.ok) {
+                console.error('❌ Failed to load recent reflections');
+                setEmptyState();
+                return;
+            }
+
+            const data = await res.json();
+            if (!data || !data.success) {
+                console.error('❌ Recent reflections response invalid:', data);
+                setEmptyState();
+                return;
+            }
+
+            renderRows(data.items || []);
+        } catch (error) {
+            console.error('❌ Error loading recent reflections:', error);
+            setEmptyState();
+        }
+    }
+
+    btn.addEventListener('click', async function () {
+        const ok = await ensureLoggedInForFocus();
+        if (!ok) return;
+
+        await loadRecentFocus();
+        modal.show();
+    });
 }
 
 // Weekly Stats Chart (last 7 days of wellbeing ratings)

@@ -27,6 +27,44 @@
                         <small>Every day is a step forward. Every moment counts.</small>
                     </p>
                 </div>
+
+    <!-- Recent Focus Modal -->
+    <div class="modal fade" id="recentFocusModal" tabindex="-1" aria-labelledby="recentFocusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header wellbeing-modal-header">
+                    <h5 class="modal-title" id="recentFocusModalLabel">
+                        <i class="bi bi-clock-history me-2"></i>Recent Focus
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        A quick look at your recent reflections and overall wellbeing scores.
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 15%;">Date</th>
+                                    <th style="width: 15%;">Overall</th>
+                                    <th style="width: 70%;">Reflection</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-focus-body">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Loading recent focus...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
             </div>
         </section>
 
@@ -73,17 +111,24 @@
                                 rows="5" 
                                 placeholder="How are you feeling today? What are you grateful for? Any thoughts or observations..."
                             ></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small id="reflection-status" class="text-muted">Auto-saves as you type</small>
-                                <div class="d-flex gap-2">
+                            <div class="mt-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small id="reflection-status" class="text-muted">Auto-saves as you type</small>
+                                    <div class="d-flex gap-2">
+                                        <button id="save-reflection-btn" class="btn btn-sm btn-success">
+                                            <i class="bi bi-save me-1"></i>Save Reflection
+                                        </button>
+                                        <button id="past-reflections-btn" class="btn btn-sm btn-secondary">
+                                            <i class="bi bi-calendar-event me-1"></i>Past Reflections
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap justify-content-end">
                                     <button id="open-progress-modal-btn" class="btn btn-sm btn-info text-white">
                                         <i class="bi bi-emoji-smile me-1"></i>Wellness
                                     </button>
-                                    <button id="save-reflection-btn" class="btn btn-sm btn-success">
-                                        <i class="bi bi-save me-1"></i>Save Reflection
-                                    </button>
-                                    <button id="past-reflections-btn" class="btn btn-sm btn-secondary">
-                                        <i class="bi bi-calendar-event me-1"></i>Past Reflections
+                                    <button id="recent-focus-btn" class="btn btn-sm btn-primary text-white">
+                                        <i class="bi bi-clock-history me-1"></i>Recent Focus
                                     </button>
                                 </div>
                             </div>
