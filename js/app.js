@@ -944,6 +944,12 @@ function initTreatmentsPage() {
     const masterSaveBtn = document.getElementById('master-save-supplement-btn');
     const masterSaveLabel = document.getElementById('master-supplement-save-label');
     const masterTableBody = document.getElementById('master-supplements-body');
+    const masterRowModalEl = document.getElementById('masterSupplementRowModal');
+    const masterRowModalName = document.getElementById('master-supplement-row-name');
+    const masterRowEditBtn = document.getElementById('master-supplement-row-edit');
+    const masterRowDeleteBtn = document.getElementById('master-supplement-row-delete');
+    let masterRowModalInstance = null;
+    let masterRowSelectedId = null;
     let masterSupplements = [];
 
     let treatmentModalInstance, deleteModalInstance;
@@ -1091,16 +1097,19 @@ function initTreatmentsPage() {
             if (!validateForm()) {
                 return;
             }
-            
+
             // Build payload from the actual form so all fields are included
             const form = document.getElementById('treatment-form');
             const formData = new FormData(form);
 
-            // Only send id when actually editing an existing DB record (id > 0)
-            if (typeof editingIndex === 'number' && editingIndex > 0) {
-                formData.set('id', editingIndex);
-            } else {
+            // Decide whether this is an update or a new insert based on the hidden id field
+            const rawId = (formData.get('id') || '').toString().trim();
+            const hasId = rawId !== '';
+            if (!hasId) {
+                // Ensure no empty id is sent for new records
                 formData.delete('id');
+            } else {
+                formData.set('id', rawId);
             }
 
             // Convert to URL-encoded for PHP $_POST
@@ -1114,7 +1123,8 @@ function initTreatmentsPage() {
             .then(res => res.json())
             .then(data => {
                 if (data && data.success) {
-                    showAlert(editingIndex ? 'Treatment updated successfully!' : 'Treatment added successfully!', 'success');
+                    // Use hasId to determine message, since that reflects whether we sent an id
+                    showAlert(hasId ? 'Treatment updated successfully!' : 'Treatment added successfully!', 'success');
                     loadTreatmentsTable();
                     treatmentModalInstance.hide();
                     resetForm();
@@ -1267,7 +1277,7 @@ function initTreatmentsPage() {
             if (masterSupplements.length === 0) {
                 masterTableBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-3">
+                        <td colspan="3" class="text-center text-muted py-3">
                             <i class="bi bi-info-circle me-1"></i>No supplements saved yet. Add your regular supplements above.
                         </td>
                     </tr>
@@ -1278,78 +1288,101 @@ function initTreatmentsPage() {
             let rowsHtml = '';
             masterSupplements.forEach(s => {
                 rowsHtml += `
-                    <tr data-id="${s.id}">
+                    <tr data-id="${s.id}" class="master-supplement-row">
                         <td>${s.name ? s.name : ''}</td>
                         <td>${s.dosage ? s.dosage : ''}</td>
                         <td>${s.notes ? s.notes : ''}</td>
-                        <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-primary me-1 master-edit-btn" data-id="${s.id}">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger master-delete-btn" data-id="${s.id}">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
                     </tr>
                 `;
             });
 
             masterTableBody.innerHTML = rowsHtml;
 
-            // Wire up edit/delete buttons
-            masterTableBody.querySelectorAll('.master-edit-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.getAttribute('data-id');
-                    const sup = masterSupplements.find(s => String(s.id) === String(id));
-                    if (!sup) return;
+            // Make each row clickable to edit/delete via the modal we use for master list
+            const rowModalEl = document.getElementById('masterSupplementRowModal');
+            const rowModalName = document.getElementById('master-supplement-row-name');
+            const rowEditBtn = document.getElementById('master-supplement-row-edit');
+            const rowDeleteBtn = document.getElementById('master-supplement-row-delete');
 
-                    const masterIdInput = document.getElementById('master-supplement-id');
-                    const masterNameInput = document.getElementById('master-supplement-name');
-                    const masterDoseInput = document.getElementById('master-supplement-dose');
-                    const masterNotesInput = document.getElementById('master-supplement-notes');
-                    const masterSaveLabel = document.getElementById('master-supplement-save-label');
+            if (rowModalEl && window.bootstrap && bootstrap.Modal) {
+                const rowModal = new bootstrap.Modal(rowModalEl);
+                let selectedId = null;
 
-                    if (masterIdInput) masterIdInput.value = sup.id;
-                    if (masterNameInput) masterNameInput.value = sup.name || '';
-                    if (masterDoseInput) masterDoseInput.value = sup.dosage || '';
-                    if (masterNotesInput) masterNotesInput.value = sup.notes || '';
-                    if (masterSaveLabel) masterSaveLabel.textContent = 'Update';
-                });
-            });
+                masterTableBody.querySelectorAll('tr.master-supplement-row').forEach(row => {
+                    row.addEventListener('click', () => {
+                        const id = row.getAttribute('data-id');
+                        const sup = masterSupplements.find(s => String(s.id) === String(id));
+                        if (!sup) return;
 
-            masterTableBody.querySelectorAll('.master-delete-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!id) return;
-                    if (!confirm('Are you sure you want to delete this supplement from your list?')) return;
-
-                    const params = new URLSearchParams();
-                    params.append('id', id);
-
-                    try {
-                        const res = await fetch('supplements-delete.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: params.toString()
-                        });
-                        const result = await res.json();
-                        if (result && result.success) {
-                            showAlert('Supplement removed from your list.', 'info');
-                            await loadMasterSupplementsForTreatments();
-                        } else {
-                            showAlert((result && result.message) || 'Error deleting supplement.', 'danger');
+                        selectedId = id;
+                        if (rowModalName) {
+                            rowModalName.textContent = sup.name || 'Selected supplement';
                         }
-                    } catch (err) {
-                        console.error('❌ Error deleting supplement:', err);
-                        showAlert('Error deleting supplement.', 'danger');
-                    }
+
+                        rowModal.show();
+                    });
                 });
-            });
+
+                if (rowEditBtn) {
+                    rowEditBtn.onclick = () => {
+                        if (!selectedId) return;
+                        const sup = masterSupplements.find(s => String(s.id) === String(selectedId));
+                        if (!sup) return;
+
+                        const masterIdInput = document.getElementById('master-supplement-id');
+                        const masterNameInput = document.getElementById('master-supplement-name');
+                        const masterDoseInput = document.getElementById('master-supplement-dose');
+                        const masterNotesInput = document.getElementById('master-supplement-notes');
+                        const masterSaveLabel = document.getElementById('master-supplement-save-label');
+
+                        if (masterIdInput) masterIdInput.value = sup.id;
+                        if (masterNameInput) masterNameInput.value = sup.name || '';
+                        if (masterDoseInput) masterDoseInput.value = sup.dosage || '';
+                        if (masterNotesInput) masterNotesInput.value = sup.notes || '';
+                        if (masterSaveLabel) masterSaveLabel.textContent = 'Update';
+
+                        rowModal.hide();
+                        const formEl = document.getElementById('master-supplement-form');
+                        if (formEl) {
+                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    };
+                }
+
+                if (rowDeleteBtn) {
+                    rowDeleteBtn.onclick = async () => {
+                        if (!selectedId) return;
+                        const params = new URLSearchParams();
+                        params.append('id', selectedId);
+
+                        if (!confirm('Are you sure you want to delete this supplement from your list?')) return;
+
+                        try {
+                            const res = await fetch('supplements-delete.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: params.toString()
+                            });
+                            const result = await res.json();
+                            if (result && result.success) {
+                                showAlert('Supplement removed from your list.', 'info');
+                                await loadMasterSupplementsForTreatments();
+                            } else {
+                                showAlert((result && result.message) || 'Error deleting supplement.', 'danger');
+                            }
+                        } catch (err) {
+                            console.error('❌ Error deleting supplement:', err);
+                            showAlert('Error deleting supplement.', 'danger');
+                        }
+                        rowModal.hide();
+                    };
+                }
+            }
         } catch (error) {
             console.error('❌ Error loading master supplements:', error);
             masterTableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-muted py-3">
+                    <td colspan="3" class="text-center text-muted py-3">
                         <i class="bi bi-info-circle me-1"></i>You need to be logged in to view your supplements.
                     </td>
                 </tr>
@@ -1473,6 +1506,43 @@ async function initTrackerPage() {
     
     // --- Master Supplements (per-user list) ---
 
+    function populateMasterFormFromSupplement(sup) {
+        if (!sup) return;
+        if (masterIdInput) masterIdInput.value = sup.id;
+        if (masterNameInput) masterNameInput.value = sup.name || '';
+        if (masterDoseInput) masterDoseInput.value = sup.dosage || '';
+        if (masterNotesInput) masterNotesInput.value = sup.notes || '';
+        if (masterSaveLabel) masterSaveLabel.textContent = 'Update';
+        masterNameInput?.focus();
+    }
+
+    async function deleteMasterSupplementById(id) {
+        if (!id) return;
+        if (!confirm('Are you sure you want to delete this supplement from your list?')) return;
+
+        const params = new URLSearchParams();
+        params.append('id', id);
+
+        try {
+            const res = await fetch('supplements-delete.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            });
+            const result = await res.json();
+            if (result && result.success) {
+                showAlert('Supplement removed from your list.', 'info');
+                clearMasterForm();
+                await loadMasterSupplements();
+            } else {
+                showAlert((result && result.message) || 'Error deleting supplement.', 'danger');
+            }
+        } catch (err) {
+            console.error('❌ Error deleting supplement:', err);
+            showAlert('Error deleting supplement.', 'danger');
+        }
+    }
+
     async function loadMasterSupplements() {
         if (!masterTableBody) return;
 
@@ -1492,7 +1562,7 @@ async function initTrackerPage() {
             if (masterSupplements.length === 0) {
                 masterTableBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-3">
+                        <td colspan="3" class="text-center text-muted py-3">
                             <i class="bi bi-info-circle me-1"></i>No supplements saved yet. Add your regular supplements above.
                         </td>
                     </tr>
@@ -1503,73 +1573,63 @@ async function initTrackerPage() {
             let rowsHtml = '';
             masterSupplements.forEach(s => {
                 rowsHtml += `
-                    <tr data-id="${s.id}">
+                    <tr data-id="${s.id}" class="master-supplement-row">
                         <td>${s.name ? s.name : ''}</td>
                         <td>${s.dosage ? s.dosage : ''}</td>
                         <td>${s.notes ? s.notes : ''}</td>
-                        <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-primary me-1 master-edit-btn" data-id="${s.id}">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger master-delete-btn" data-id="${s.id}">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
                     </tr>
                 `;
             });
 
             masterTableBody.innerHTML = rowsHtml;
 
-            // Wire up edit/delete buttons
-            masterTableBody.querySelectorAll('.master-edit-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.getAttribute('data-id');
-                    const sup = masterSupplements.find(s => String(s.id) === String(id));
-                    if (!sup) return;
+            // Make each row clickable to edit/delete via a small modal
+            if (masterRowModalEl && window.bootstrap && bootstrap.Modal) {
+                masterRowModalInstance = masterRowModalInstance || new bootstrap.Modal(masterRowModalEl);
 
-                    if (masterIdInput) masterIdInput.value = sup.id;
-                    if (masterNameInput) masterNameInput.value = sup.name || '';
-                    if (masterDoseInput) masterDoseInput.value = sup.dosage || '';
-                    if (masterNotesInput) masterNotesInput.value = sup.notes || '';
-                    if (masterSaveLabel) masterSaveLabel.textContent = 'Update';
-                });
-            });
+                masterTableBody.querySelectorAll('tr.master-supplement-row').forEach(row => {
+                    row.addEventListener('click', () => {
+                        const id = row.getAttribute('data-id');
+                        const sup = masterSupplements.find(s => String(s.id) === String(id));
+                        if (!sup) return;
 
-            masterTableBody.querySelectorAll('.master-delete-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!id) return;
-                    if (!confirm('Are you sure you want to delete this supplement from your list?')) return;
-
-                    const params = new URLSearchParams();
-                    params.append('id', id);
-
-                    try {
-                        const res = await fetch('supplements-delete.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: params.toString()
-                        });
-                        const result = await res.json();
-                        if (result && result.success) {
-                            showAlert('Supplement removed from your list.', 'info');
-                            clearMasterForm();
-                            await loadMasterSupplements();
-                        } else {
-                            showAlert((result && result.message) || 'Error deleting supplement.', 'danger');
+                        masterRowSelectedId = id;
+                        if (masterRowModalName) {
+                            masterRowModalName.textContent = sup.name || 'Selected supplement';
                         }
-                    } catch (err) {
-                        console.error('❌ Error deleting supplement:', err);
-                        showAlert('Error deleting supplement.', 'danger');
-                    }
+
+                        masterRowModalInstance.show();
+                    });
                 });
-            });
+
+                if (masterRowEditBtn) {
+                    masterRowEditBtn.onclick = () => {
+                        if (!masterRowSelectedId) return;
+                        const sup = masterSupplements.find(s => String(s.id) === String(masterRowSelectedId));
+                        if (!sup) return;
+
+                        populateMasterFormFromSupplement(sup);
+                        masterRowModalInstance.hide();
+                        const formEl = document.getElementById('master-supplement-form');
+                        if (formEl) {
+                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    };
+                }
+
+                if (masterRowDeleteBtn) {
+                    masterRowDeleteBtn.onclick = async () => {
+                        if (!masterRowSelectedId) return;
+                        await deleteMasterSupplementById(masterRowSelectedId);
+                        masterRowModalInstance.hide();
+                    };
+                }
+            }
         } catch (error) {
             console.error('❌ Error loading master supplements:', error);
             masterTableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-danger py-3">
+                    <td colspan="3" class="text-center text-danger py-3">
                         <i class="bi bi-exclamation-triangle me-1"></i>Error loading supplements list
                     </td>
                 </tr>

@@ -17,6 +17,7 @@ NUTRITION
     2. *On the cards, put BR between title and category
     3. *Update colour scheme on Add/Edit Recipes card
     4. *On recipe table add tabs for categories and accordion for recipes
+    5. Remove actions column from Supplements table and make each row clickable to edit
 INVESTIGATIONS
     1. *Add background colour to Search button
     2. *Test delete button and export to CSV feature
