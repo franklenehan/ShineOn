@@ -11,8 +11,9 @@ TREATMENTS
     2. *Add colour to Edit treatments button background
     3. *Update colour scheme to Edit/Add treatment cards
     4. *Add colour to background of Edit supplements button
+    5. Repair Edit Treatments button
 NUTRITION
-    1. Move Tips cards down so it's not covering the header ??
+    1. *Move Tips cards down so it's not covering the header ??
     2. *On the cards, put BR between title and category
     3. *Update colour scheme on Add/Edit Recipes card
     4. *On recipe table add tabs for categories and accordion for recipes
