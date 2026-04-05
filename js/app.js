@@ -1208,42 +1208,56 @@ function initTreatmentsPage() {
     
     // Export to CSV
     if (exportBtn) {
-        exportBtn.addEventListener('click', function() {
-            const treatments = Storage.load('treatmentRecords') || [];
-            
-            if (treatments.length === 0) {
-                showAlert('No treatments to export.', 'warning');
-                return;
+        exportBtn.addEventListener('click', async function() {
+            try {
+                const response = await fetch('treatments-list.php', { method: 'GET' });
+                if (!response.ok) {
+                    throw new Error('Failed to load treatments for export');
+                }
+                const data = await response.json();
+                if (!data || !data.success || !Array.isArray(data.treatments)) {
+                    throw new Error('Invalid treatments data for export');
+                }
+
+                const treatments = data.treatments;
+
+                if (treatments.length === 0) {
+                    showAlert('No treatments to export.', 'warning');
+                    return;
+                }
+
+                // Create CSV content
+                const headers = ['Date', 'Treatment Type', 'Clinic/Location', 'Outcome/Notes', 'Attachments'];
+                const csvRows = [headers.join(',')];
+
+                treatments.forEach(treatment => {
+                    const row = [
+                        treatment.date,
+                        `"${treatment.type}"`,
+                        `"${treatment.clinic || ''}"`,
+                        `"${(treatment.notes || '').replace(/"/g, '""')}"`,
+                        `"${treatment.attachments || ''}"`
+                    ];
+                    csvRows.push(row.join(','));
+                });
+
+                const csvContent = csvRows.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `treatment-records-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showAlert('Treatments exported successfully!', 'success');
+            } catch (error) {
+                console.error('❌ Error exporting treatments:', error);
+                showAlert('Error exporting treatments.', 'danger');
             }
-            
-            // Create CSV content
-            const headers = ['Date', 'Treatment Type', 'Clinic/Location', 'Outcome/Notes', 'Attachments'];
-            const csvRows = [headers.join(',')];
-            
-            treatments.forEach(treatment => {
-                const row = [
-                    treatment.date,
-                    `"${treatment.type}"`,
-                    `"${treatment.clinic || ''}"`,
-                    `"${(treatment.notes || '').replace(/"/g, '""')}"`,
-                    `"${treatment.attachments || ''}"`
-                ];
-                csvRows.push(row.join(','));
-            });
-            
-            const csvContent = csvRows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `treatment-records-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            showAlert('Treatments exported successfully!', 'success');
         });
     }
     
